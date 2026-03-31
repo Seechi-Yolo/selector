@@ -20,7 +20,7 @@ Open any web page, click the **Selector** bookmark.
 | **↑ / ↓** | Navigate to parent / child element |
 | **✎ button** | Add per-element instruction |
 | **Cmd+C** | Copy prompt to clipboard |
-| **Shift+Cmd+C** | Copy prompt + show numbered badges for screenshot |
+| **Cmd+I** | Copy prompt + show numbered badges for screenshot |
 | **Cmd+Z** | Undo last selection change |
 | **Space** | Pause / resume selecting |
 | **Esc** | Clear selection |

@@ -462,9 +462,14 @@
       else { pushHistory(); clearSelection(); updateTags(); }
       return;
     }
-    if (mod && e.key.toLowerCase() === "c" && selectedElements.length > 0) {
+    if (mod && e.key.toLowerCase() === "c" && !e.shiftKey && selectedElements.length > 0) {
       e.preventDefault();
-      if (e.shiftKey) copyWithScreenshot(); else copyPrompt();
+      copyPrompt();
+      return;
+    }
+    if (mod && e.key.toLowerCase() === "i" && selectedElements.length > 0) {
+      e.preventDefault();
+      copyWithScreenshot();
       return;
     }
     if (mod && e.key.toLowerCase() === "z" && !e.shiftKey) {
@@ -597,7 +602,7 @@
           <span><kbd>\u2191\u2193</kbd> Navigate</span>
           <span><kbd>Space</kbd> Pause</span>
           <span><kbd>\u2318C</kbd> Copy</span>
-          <span><kbd>\u21e7\u2318C</kbd> +Screenshot</span>
+          <span><kbd>\u2318I</kbd> +Screenshot</span>
           <span><kbd>\u2318Z</kbd> Undo</span>
           <span><kbd>Esc</kbd> Clear</span>
         </div>
