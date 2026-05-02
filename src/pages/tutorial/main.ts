@@ -1,5 +1,6 @@
 import shellCss from "../_shell/extension-page-shell.css?raw";
 import { FULL_TUTORIAL_SECTIONS } from "./full-tutorial-sections";
+import { extensionAssetUrl } from "../../shared/extension/extension-asset-url";
 
 function injectStyles(): void {
   const el = document.createElement("style");
@@ -37,6 +38,22 @@ function appendTutorialSection(
     p.textContent = text;
     section.appendChild(p);
   }
+
+  const placeholderSrc = extensionAssetUrl("assets/tutorial/placeholder.gif");
+  if (placeholderSrc) {
+    const figure = document.createElement("figure");
+    figure.className = "tutorial-section-figure";
+    const img = document.createElement("img");
+    img.src = placeholderSrc;
+    img.alt = `「${title}」示意（占位图）`;
+    img.decoding = "async";
+    img.loading = "lazy";
+    const cap = document.createElement("figcaption");
+    cap.textContent = "动图占位，正式版将替换为屏幕录制。";
+    figure.append(img, cap);
+    section.appendChild(figure);
+  }
+
   container.appendChild(section);
 }
 
@@ -58,6 +75,13 @@ function main(): void {
   hero.innerHTML = `
     <h1>使用教程</h1>
     <p>说明常用能力与快捷键。若要试用主面板、选取高亮与批注，请打开顶栏的<strong>「沙箱」</strong>。</p>
+    <p class="tutorial-hero-quick">
+      <a href="#open">启动扩展</a>
+      <span aria-hidden="true"> · </span>
+      <a href="#select">单击选取</a>
+      <span aria-hidden="true"> · </span>
+      <a href="#copy">复制提示词</a>
+    </p>
   `;
   shell.appendChild(hero);
 

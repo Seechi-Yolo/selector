@@ -1,4 +1,4 @@
-/* UI 沙盒：实验区与扩展页壳层令牌对齐 */
+/* 沙箱：多样式示例页 + 与网页一致的浮动 Selector（由 selector-boot 挂载） */
 
 :root {
   --lab-carbon: #101010;
@@ -9,12 +9,22 @@
   --lab-snow: #f2f2f2;
   --lab-steel: #8b949e;
   --lab-purple: #818cf8;
-  --lab-dashed: rgba(79, 93, 117, 0.45);
   --lab-radius: 12px;
-  --lab-font-mono: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-/* 实验岛：类 bento 卡片 + 信号顶边 */
+.sandbox-main-flow {
+  min-width: 0;
+}
+
+.sandbox-page-lead {
+  margin: 0 0 22px;
+  font-size: 0.9375rem;
+  line-height: 1.62;
+  color: var(--lab-steel);
+  max-width: 52rem;
+}
+
+/* 分区卡片（示例区块容器） */
 .sandbox-isle {
   position: relative;
   isolation: isolate;
@@ -46,7 +56,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 10px 16px;
   padding: 16px 20px 14px;
   border-bottom: 1px solid rgba(61, 58, 57, 0.85);
@@ -62,148 +72,196 @@
   color: var(--lab-steel);
 }
 
-.sandbox-isle-badge {
-  font-family: var(--lab-font-mono);
-  font-size: 0.625rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  padding: 4px 10px;
-  border-radius: 999px;
-  color: var(--lab-mint);
-  border: 1px solid rgba(0, 217, 146, 0.28);
-  background: rgba(0, 217, 146, 0.08);
-}
-
 .sandbox-isle-body {
   position: relative;
   min-height: 0;
   padding: 18px 20px 20px;
 }
 
-.sandbox-isle-log {
-  margin: 0;
-  padding: 12px 16px 14px;
-  font-family: var(--lab-font-mono);
-  font-size: 0.6875rem;
-  line-height: 1.45;
-  background: rgba(5, 5, 7, 0.65);
-  color: #9ae6b4;
-  border-top: 1px solid var(--lab-border);
-  max-height: 160px;
-  overflow: auto;
-  white-space: pre-wrap;
-}
-
-/* 兼容旧标题类（Editor 岛等） */
-.sandbox-isle .tutorial-sandbox-title {
-  margin: 0;
-}
-
-.tutorial-sandbox-title {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--lab-steel);
-  text-transform: uppercase;
+/* —— 区内示例样式 —— */
+.sandbox-prose {
   margin: 0 0 12px;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--lab-snow);
+  max-width: 48rem;
 }
 
-.tutorial-sandbox-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: flex-start;
+.sandbox-prose-muted {
+  color: var(--lab-steel);
 }
 
-.tutorial-onboarding-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px;
-}
-
-.tutorial-playground {
-  position: relative;
-  min-height: 220px;
-  border-radius: var(--lab-radius);
-  border: 1px dashed var(--lab-dashed);
-  background:
-    radial-gradient(ellipse 70% 55% at 50% 0%, rgba(0, 217, 146, 0.07), transparent 62%),
-    var(--lab-carbon-hot);
-  padding: 18px;
-  margin-top: 0;
-  box-shadow: 0 0 40px rgba(0, 217, 146, 0.04) inset;
-}
-
-.tutorial-playground-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 14px;
-}
-
-.tutorial-playground-toolbar button {
-  font-size: 0.75rem;
+.sandbox-heading-4 {
+  margin: 16px 0 8px;
+  font-size: 1rem;
   font-weight: 600;
+  color: var(--lab-snow);
+}
+
+.sandbox-quote {
+  margin: 14px 0 0;
+  padding: 12px 16px;
+  border-left: 3px solid var(--lab-mint);
+  background: rgba(0, 217, 146, 0.06);
+  border-radius: 0 8px 8px 0;
+  font-size: 0.875rem;
+  color: #b8b3b0;
+}
+
+.sandbox-card-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.sandbox-card {
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--lab-border);
+  background: rgba(10, 10, 12, 0.9);
+}
+
+.sandbox-card--accent {
+  border-color: rgba(0, 217, 146, 0.45);
+  box-shadow: 0 0 0 1px rgba(0, 217, 146, 0.12) inset;
+}
+
+.sandbox-card-title {
+  margin: 0 0 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--lab-snow);
+}
+
+.sandbox-card-body {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--lab-steel);
+}
+
+.sandbox-banner {
+  margin-top: 16px;
   padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid var(--lab-border);
-  background: rgba(16, 16, 16, 0.65);
-  color: var(--lab-snow);
-  cursor: pointer;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-.tutorial-playground-toolbar button:hover {
-  background: rgba(0, 0, 0, 0.35);
-  border-color: rgba(0, 217, 146, 0.45);
-  box-shadow: 0 0 0 1px rgba(0, 217, 146, 0.12);
-}
-
-.tutorial-playground-toolbar button:focus-visible {
-  outline: 2px solid rgba(59, 130, 246, 0.55);
-  outline-offset: 2px;
-}
-
-.tutorial-demo-block {
-  display: inline-block;
-  padding: 12px 18px;
-  margin: 8px 10px 0 0;
-  background: rgba(0, 217, 146, 0.09);
-  border: 1px solid rgba(0, 217, 146, 0.38);
-  border-radius: 10px;
   font-size: 0.8125rem;
-  font-weight: 500;
   color: var(--lab-snow);
-  box-shadow: 0 0 24px rgba(0, 217, 146, 0.06);
+  background: rgba(129, 140, 248, 0.12);
+  border: 1px solid rgba(129, 140, 248, 0.35);
 }
 
-.tutorial-anchor-btn {
-  font-size: 0.8125rem;
+.sandbox-list {
+  margin: 0 0 14px;
+  padding-left: 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--lab-snow);
+}
+
+.sandbox-list-ordered {
+  margin-bottom: 0;
+}
+
+.sandbox-inline-link {
+  color: var(--lab-mint);
   font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sandbox-form-row {
+  margin-bottom: 12px;
+}
+
+.sandbox-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--lab-steel);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sandbox-input,
+.sandbox-textarea {
+  width: 100%;
+  max-width: 28rem;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--lab-border);
+  background: rgba(5, 5, 7, 0.85);
+  color: var(--lab-snow);
+  font-size: 0.875rem;
+  font-family: inherit;
+}
+
+.sandbox-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.sandbox-btn {
   padding: 10px 16px;
   border-radius: 8px;
-  border: 1px solid rgba(0, 217, 146, 0.35);
-  background: rgba(0, 217, 146, 0.1);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: default;
+  border: 1px solid var(--lab-border);
+  background: rgba(16, 16, 16, 0.8);
+  color: var(--lab-snow);
+}
+
+.sandbox-btn-primary {
+  border-color: rgba(0, 217, 146, 0.45);
+  background: rgba(0, 217, 146, 0.15);
   color: var(--lab-mint);
-  cursor: pointer;
-  transition:
-    background 0.15s ease,
-    box-shadow 0.15s ease,
-    border-color 0.15s ease;
 }
 
-.tutorial-anchor-btn:hover {
-  background: rgba(0, 217, 146, 0.16);
-  box-shadow: 0 0 20px rgba(0, 217, 146, 0.12);
-  border-color: var(--lab-signal);
+.sandbox-btn-ghost {
+  background: transparent;
+  color: var(--lab-steel);
 }
 
-.tutorial-anchor-btn:focus-visible {
-  outline: 2px solid rgba(59, 130, 246, 0.55);
-  outline-offset: 2px;
+.sandbox-figure {
+  margin: 0 0 16px;
 }
 
+.sandbox-figure-placeholder {
+  height: 120px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(61, 58, 57, 0.5), rgba(22, 22, 24, 0.95));
+  border: 1px solid var(--lab-border);
+}
+
+.sandbox-figcaption {
+  margin-top: 8px;
+  font-size: 0.8125rem;
+  color: var(--lab-steel);
+}
+
+.sandbox-code {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--lab-border);
+  background: rgba(5, 5, 7, 0.92);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #9ae6b4;
+  overflow: auto;
+}
+
+.sandbox-code code {
+  font-family: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sandbox-btn {
+    transition: none;
+  }
+}

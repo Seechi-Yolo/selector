@@ -1,17 +1,8 @@
 import { NS } from "../../shared/dom/constants";
+import { extensionAssetUrl } from "../../shared/extension/extension-asset-url";
+import { HELP_HUB_HTML_PATH } from "../../shared/extension/extension-html-paths";
 import { FIRST_THREE_STEPS } from "./first-steps";
 import { markFirstThreeOnboardingDone } from "./onboarding-storage";
-
-function tutorialPlaceholderGifUrl(): string {
-  try {
-    if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
-      return chrome.runtime.getURL("assets/tutorial/placeholder.gif");
-    }
-  } catch {
-    /* ignore */
-  }
-  return "";
-}
 
 export class EditorOnboarding {
   private host: HTMLDivElement | null = null;
@@ -38,7 +29,7 @@ export class EditorOnboarding {
     root.setAttribute("aria-modal", "false");
     root.setAttribute("aria-label", "Selector 使用引导");
 
-    const url = tutorialPlaceholderGifUrl();
+    const url = extensionAssetUrl("assets/tutorial/placeholder.gif");
 
     root.innerHTML = `
       <div class="${NS}-onboarding-inner">
@@ -48,6 +39,9 @@ export class EditorOnboarding {
           ${url ? `<img class="${NS}-onboarding-gif" alt="" decoding="async" />` : `<div class="${NS}-onboarding-gif-fallback">GIF 占位</div>`}
         </div>
         <p class="${NS}-onboarding-body"></p>
+        <p class="${NS}-onboarding-hub-wrap">
+          <button type="button" class="${NS}-onboarding-hub">查看扩展内完整教程</button>
+        </p>
         <div class="${NS}-onboarding-footer">
           <div class="${NS}-onboarding-dots"></div>
           <div class="${NS}-onboarding-actions">
@@ -74,6 +68,9 @@ export class EditorOnboarding {
 
     root.querySelector(`.${NS}-onboarding-skip`)!.addEventListener("click", () => this.finish());
     this.primaryBtn!.addEventListener("click", () => this.onPrimary());
+    root.querySelector(`.${NS}-onboarding-hub`)!.addEventListener("click", () => {
+      window.open(extensionAssetUrl(HELP_HUB_HTML_PATH), "_blank", "noopener");
+    });
 
     this.renderStep();
     this.startPositionLoop();

@@ -100,11 +100,6 @@ export class SelectorContentApp {
     }
   }
 
-  /** 扩展图标右键「查看使用教程」：无论是否首访都重新展示三步引导。 */
-  openTutorialFromMenu(): void {
-    this.mountOnboarding();
-  }
-
   private mountOnboarding(): void {
     this.onboarding?.destroy();
     this.onboarding = null;

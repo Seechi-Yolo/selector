@@ -1,4 +1,4 @@
-/* 扩展内同源页：VoltAgent 令牌 + 类 React Bits 氛围（网格、光晕、分层景深），无外链字体 */
+/* 扩展内同源页：VoltAgent 令牌 + 类 React Bits 氛围（网格、径向光感、分层景深），无外链字体；避免全屏无限动画与 sticky 上的 backdrop-filter 以降低合成成本 */
 
 :root {
   --va-abyss: #050507;
@@ -77,28 +77,6 @@ body {
     100% 100%;
   background-position: center, center, center, center, center;
   mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 100%);
-}
-
-.ext-ambient::after {
-  content: "";
-  position: absolute;
-  inset: -20% -10%;
-  background: conic-gradient(from 120deg at 70% 40%, transparent, rgba(0, 217, 146, 0.04), transparent 40%);
-  animation: ext-ambient-spin 48s linear infinite;
-  opacity: 0.85;
-}
-
-@keyframes ext-ambient-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ext-ambient::after {
-    animation: none;
-    opacity: 0.35;
-  }
 }
 
 /* --- 主内容壳 --- */
@@ -227,8 +205,7 @@ body {
   padding: 16px 14px;
   border-radius: var(--va-radius-md);
   border: 1px solid var(--va-border);
-  background: rgba(16, 16, 16, 0.72);
-  backdrop-filter: blur(10px);
+  background: rgba(16, 16, 16, 0.94);
   box-shadow: 0 0 24px var(--va-haze);
 }
 
@@ -389,6 +366,43 @@ body {
   margin-bottom: 0;
 }
 
+.tutorial-section-figure {
+  margin: 14px 0 0;
+}
+
+.tutorial-section-figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--va-radius-md);
+  border: 1px solid var(--va-border);
+}
+
+.tutorial-section-figure figcaption {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--va-steel);
+}
+
+.tutorial-hero-quick {
+  margin: 14px 0 0;
+  font-size: 0.875rem;
+  color: var(--va-parchment);
+}
+
+.tutorial-hero-quick a {
+  color: var(--va-mint);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 217, 146, 0.35);
+}
+
+.tutorial-hero-quick a:hover {
+  color: var(--va-snow);
+  border-bottom-color: var(--va-mint);
+}
+
 .tutorial-section code {
   font-family: var(--va-font-mono);
   font-size: 0.8125rem;
@@ -475,4 +489,13 @@ body {
 .tutorial-nav-link-secondary:hover {
   border-color: var(--va-signal);
   color: var(--va-mint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-rail-link,
+  .tutorial-section,
+  .tutorial-section::before,
+  .tutorial-nav-link {
+    transition: none;
+  }
 }
