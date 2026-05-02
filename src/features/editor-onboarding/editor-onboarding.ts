@@ -1,7 +1,9 @@
 import { NS } from "../../shared/dom/constants";
 import { extensionAssetUrl } from "../../shared/extension/extension-asset-url";
-import { HELP_HUB_HTML_PATH } from "../../shared/extension/extension-html-paths";
 import { FIRST_THREE_STEPS } from "./first-steps";
+
+/** 与 `shared/extension/extension-html-paths.ts` 中 `HELP_HUB_HTML_PATH` 保持一致；勿从该文件 import，以免 content 与 SW 拆 chunk 导致注入页 `import` 语法错误。 */
+const HELP_HUB_HTML_PATH = "src/pages/help-hub/help-hub.html" as const;
 import { markFirstThreeOnboardingDone } from "./onboarding-storage";
 
 export class EditorOnboarding {
