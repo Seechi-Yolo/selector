@@ -1,10 +1,16 @@
-import type { OnboardingStepCopy } from "../../features/editor-onboarding/first-steps";
 import { extensionAssetUrl } from "../../shared/extension/extension-asset-url";
 import { NS } from "../../shared/dom/constants";
 
+/** 与扩展内教程页并列展示的静态引导卡片用文案结构（不参与 localStorage）。 */
+export interface OnboardingStepCopy {
+  title: string;
+  body: string;
+  imageAlt: string;
+}
+
 /**
  * 与 EditorOnboarding 卡片同结构、同 CSS 类名，用于扩展内教程/沙箱页并列展示全文。
- * 位于 Bootstrap 展示层，不参与 localStorage；与 `features/editor-onboarding` 中交互式引导并列存在。
+ * 位于 Bootstrap 展示层，不参与 localStorage；与 `features/editor-onboarding` 中注入页弹窗并列存在。
  */
 export function createStaticOnboardingCard(
   step: OnboardingStepCopy,

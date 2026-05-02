@@ -1,4 +1,4 @@
-/** 教程正文；与 docs/user/user-tutorial.md 信息架构对齐，措辞面向最终用户 */
+/** 教程正文；与 docs/product/usage-tutorial.md 信息架构对齐，措辞面向最终用户 */
 export interface TutorialSection {
   id: string;
   title: string;

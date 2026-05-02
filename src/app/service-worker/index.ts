@@ -1,5 +1,6 @@
 import { HELP_HUB_HTML_PATH } from "../../shared/extension/extension-html-paths";
 import {
+  isOpenHelpHubTabMessage,
   SELECTOR_EXTENSION_PAGE_OPEN_TYPE,
   type SelectorExtensionPageOpenMessage,
 } from "../../shared/extension/selector-extension-page-message";
@@ -76,6 +77,11 @@ function registerActionContextMenu(): void {
 
 registerActionContextMenu();
 chrome.runtime.onInstalled.addListener(registerActionContextMenu);
+
+chrome.runtime.onMessage.addListener((message: unknown) => {
+  if (!isOpenHelpHubTabMessage(message)) return;
+  chrome.tabs.create({ url: chrome.runtime.getURL(HELP_HUB_HTML_PATH) });
+});
 
 chrome.contextMenus.onClicked.addListener((info) => {
   if (info.menuItemId !== MENU_HELP_HUB_ID) return;

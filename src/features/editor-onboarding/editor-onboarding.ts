@@ -1,21 +1,16 @@
 import { NS } from "../../shared/dom/constants";
-import { extensionAssetUrl } from "../../shared/extension/extension-asset-url";
-import { FIRST_THREE_STEPS } from "./first-steps";
-
-/** 与 `shared/extension/extension-html-paths.ts` 中 `HELP_HUB_HTML_PATH` 保持一致；勿从该文件 import，以免 content 与 SW 拆 chunk 导致注入页 `import` 语法错误。 */
-const HELP_HUB_HTML_PATH = "src/pages/help-hub/help-hub.html" as const;
 import { markFirstThreeOnboardingDone } from "./onboarding-storage";
+
+/** 须与 `shared/extension/selector-extension-page-message.ts` 中 `OPEN_HELP_HUB_TAB_TYPE` 字面量完全一致（勿改拆字），否则 SW 收不到消息。 */
+const OPEN_HELP_HUB_TAB_TYPE = "selector/open-help-hub-tab" as const;
+
+const INTRO_TITLE = "欢迎使用 Selector";
+const INTRO_BODY =
+  "第一次使用？建议打开扩展内「使用教程」浏览图示说明与快捷键；也可稍后在扩展图标右键菜单中随时打开。";
 
 export class EditorOnboarding {
   private host: HTMLDivElement | null = null;
-  private stepIndex = 0;
   private rafId: number | null = null;
-  private imgEl: HTMLImageElement | null = null;
-  private stepLabelEl: HTMLElement | null = null;
-  private titleEl: HTMLElement | null = null;
-  private bodyEl: HTMLElement | null = null;
-  private primaryBtn: HTMLButtonElement | null = null;
-  private dotsWrap: HTMLElement | null = null;
 
   constructor(
     private readonly anchor: () => HTMLElement | null,
@@ -26,55 +21,46 @@ export class EditorOnboarding {
     if (this.host) return;
 
     const root = document.createElement("div");
-    root.className = `${NS}-root ${NS}-onboarding`;
+    root.className = `${NS}-root ${NS}-onboarding ${NS}-onboarding--compact`;
     root.setAttribute("role", "dialog");
     root.setAttribute("aria-modal", "false");
     root.setAttribute("aria-label", "Selector 使用引导");
 
-    const url = extensionAssetUrl("assets/tutorial/placeholder.gif");
+    const inner = document.createElement("div");
+    inner.className = `${NS}-onboarding-inner`;
 
-    root.innerHTML = `
-      <div class="${NS}-onboarding-inner">
-        <p class="${NS}-onboarding-step" aria-live="polite"></p>
-        <h2 class="${NS}-onboarding-title"></h2>
-        <div class="${NS}-onboarding-media">
-          ${url ? `<img class="${NS}-onboarding-gif" alt="" decoding="async" />` : `<div class="${NS}-onboarding-gif-fallback">GIF 占位</div>`}
-        </div>
-        <p class="${NS}-onboarding-body"></p>
-        <p class="${NS}-onboarding-hub-wrap">
-          <button type="button" class="${NS}-onboarding-hub">查看扩展内完整教程</button>
-        </p>
-        <div class="${NS}-onboarding-footer">
-          <div class="${NS}-onboarding-dots"></div>
-          <div class="${NS}-onboarding-actions">
-            <button type="button" class="${NS}-onboarding-skip">跳过</button>
-            <button type="button" class="${NS}-onboarding-next"></button>
-          </div>
-        </div>
-      </div>
-    `;
+    const title = document.createElement("h2");
+    title.className = `${NS}-onboarding-title`;
+    title.textContent = INTRO_TITLE;
 
-    document.body.appendChild(root);
+    const body = document.createElement("p");
+    body.className = `${NS}-onboarding-body`;
+    body.textContent = INTRO_BODY;
+
+    const footer = document.createElement("div");
+    footer.className = `${NS}-onboarding-footer ${NS}-onboarding-footer--compact`;
+
+    const skip = document.createElement("button");
+    skip.type = "button";
+    skip.className = `${NS}-onboarding-skip`;
+    skip.textContent = "跳过";
+
+    const next = document.createElement("button");
+    next.type = "button";
+    next.className = `${NS}-onboarding-next`;
+    next.textContent = "打开使用教程";
+
+    footer.append(skip, next);
+    inner.append(title, body, footer);
+    root.appendChild(inner);
+
+    const mountParent = document.body ?? document.documentElement;
+    mountParent.appendChild(root);
     this.host = root;
 
-    this.stepLabelEl = root.querySelector(`.${NS}-onboarding-step`);
-    this.titleEl = root.querySelector(`.${NS}-onboarding-title`);
-    this.bodyEl = root.querySelector(`.${NS}-onboarding-body`);
-    this.primaryBtn = root.querySelector(`.${NS}-onboarding-next`);
-    this.dotsWrap = root.querySelector(`.${NS}-onboarding-dots`);
-    this.imgEl = root.querySelector<HTMLImageElement>(`.${NS}-onboarding-gif`);
+    skip.addEventListener("click", () => void this.finishFromSkip());
+    next.addEventListener("click", () => void this.openTutorialAndFinish());
 
-    if (this.imgEl && url) {
-      this.imgEl.src = url;
-    }
-
-    root.querySelector(`.${NS}-onboarding-skip`)!.addEventListener("click", () => this.finish());
-    this.primaryBtn!.addEventListener("click", () => this.onPrimary());
-    root.querySelector(`.${NS}-onboarding-hub`)!.addEventListener("click", () => {
-      window.open(extensionAssetUrl(HELP_HUB_HTML_PATH), "_blank", "noopener");
-    });
-
-    this.renderStep();
     this.startPositionLoop();
   }
 
@@ -82,53 +68,27 @@ export class EditorOnboarding {
     this.stopPositionLoop();
     this.host?.remove();
     this.host = null;
-    this.imgEl = null;
-    this.stepLabelEl = null;
-    this.titleEl = null;
-    this.bodyEl = null;
-    this.primaryBtn = null;
-    this.dotsWrap = null;
   }
 
-  private finish(): void {
-    markFirstThreeOnboardingDone();
+  private async openTutorialAndFinish(): Promise<void> {
+    try {
+      chrome.runtime.sendMessage({ type: OPEN_HELP_HUB_TAB_TYPE }, () => {
+        void chrome.runtime.lastError;
+      });
+    } catch {
+      /* ignore */
+    }
+    await this.persistDismissAndTeardown();
+  }
+
+  private async finishFromSkip(): Promise<void> {
+    await this.persistDismissAndTeardown();
+  }
+
+  private async persistDismissAndTeardown(): Promise<void> {
+    await markFirstThreeOnboardingDone();
     this.destroy();
     this.onDismissed?.();
-  }
-
-  private onPrimary(): void {
-    if (this.stepIndex >= FIRST_THREE_STEPS.length - 1) {
-      this.finish();
-      return;
-    }
-    this.stepIndex += 1;
-    this.renderStep();
-  }
-
-  private renderStep(): void {
-    const step = FIRST_THREE_STEPS[this.stepIndex];
-    const n = FIRST_THREE_STEPS.length;
-
-    if (this.stepLabelEl) {
-      this.stepLabelEl.textContent = `第 ${this.stepIndex + 1} / ${n} 步`;
-    }
-    if (this.titleEl) this.titleEl.textContent = step.title;
-    if (this.bodyEl) this.bodyEl.textContent = step.body;
-    if (this.imgEl) this.imgEl.alt = step.imageAlt;
-
-    if (this.primaryBtn) {
-      this.primaryBtn.textContent = this.stepIndex >= n - 1 ? "开始使用" : "下一步";
-    }
-
-    if (this.dotsWrap) {
-      this.dotsWrap.innerHTML = "";
-      for (let i = 0; i < n; i += 1) {
-        const dot = document.createElement("span");
-        dot.className = `${NS}-onboarding-dot${i === this.stepIndex ? ` ${NS}-onboarding-dot-active` : ""}`;
-        dot.setAttribute("aria-hidden", "true");
-        this.dotsWrap.appendChild(dot);
-      }
-    }
   }
 
   private startPositionLoop(): void {
@@ -153,7 +113,11 @@ export class EditorOnboarding {
   private positionNearAnchor(): void {
     if (!this.host) return;
     const el = this.anchor();
-    if (!el) return;
+    if (!el) {
+      this.host.style.right = "16px";
+      this.host.style.bottom = "16px";
+      return;
+    }
     const r = el.getBoundingClientRect();
     const gap = 10;
     const right = Math.max(8, window.innerWidth - r.right);

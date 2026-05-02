@@ -605,6 +605,43 @@
   background: #333;
 }
 
+/* 首次进入：轻量跳转弹窗（无媒体区） */
+.ai-editor-onboarding--compact {
+  width: 260px;
+}
+
+.ai-editor-onboarding--compact .ai-editor-onboarding-inner {
+  padding: 10px 12px 9px;
+}
+
+.ai-editor-onboarding--compact .ai-editor-onboarding-title {
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+
+.ai-editor-onboarding--compact .ai-editor-onboarding-body {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #555;
+}
+
+.ai-editor-onboarding-footer--compact {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-editor-onboarding-footer--compact .ai-editor-onboarding-skip {
+  padding: 6px 6px;
+}
+
+.ai-editor-onboarding-footer--compact .ai-editor-onboarding-next {
+  padding: 6px 11px;
+  font-size: 11px;
+}
+
 /* 独立教程页：并列静态引导卡片 */
 .ai-editor-onboarding.ai-editor-onboarding--static {
   position: relative;

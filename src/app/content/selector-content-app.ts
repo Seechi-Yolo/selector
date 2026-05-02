@@ -1,6 +1,6 @@
 import { saveAnnotation, clearSelectionAnnotation } from "../../features/annotate-selection";
 import { copyPrompt } from "../../features/copy-prompt";
-import { EditorOnboarding, isFirstThreeOnboardingDone } from "../../features/editor-onboarding";
+import { tryMountTutorialIntro, type EditorOnboarding } from "../../features/editor-onboarding";
 import { SelectionController } from "../../features/select-elements";
 import { BrowserClipboard } from "../../shared/clipboard";
 import type { ElementId } from "../../entities/element-selection";
@@ -95,21 +95,11 @@ export class SelectorContentApp {
     this.on(window, "resize", scheduleReposition, false);
     this.render();
 
-    if (!isFirstThreeOnboardingDone()) {
-      this.mountOnboarding();
-    }
-  }
-
-  private mountOnboarding(): void {
-    this.onboarding?.destroy();
-    this.onboarding = null;
-    this.onboarding = new EditorOnboarding(
-      () => this.panel?.element ?? null,
-      () => {
-        this.onboarding = null;
-      },
-    );
-    this.onboarding.mount();
+    void tryMountTutorialIntro(() => this.panel?.element ?? null, () => {
+      this.onboarding = null;
+    }).then((o) => {
+      this.onboarding = o;
+    });
   }
 
   destroy(): void {

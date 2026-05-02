@@ -22,7 +22,7 @@
     "service_worker": "assets/service-worker.js",
     "type": "module"
   },
-  "permissions": ["activeTab", "scripting", "contextMenus"],
+  "permissions": ["activeTab", "scripting", "contextMenus", "storage"],
   "web_accessible_resources": [
     {
       "resources": ["assets/tutorial/placeholder.gif"],

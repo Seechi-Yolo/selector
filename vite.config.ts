@@ -16,14 +16,15 @@ function copyManifest(): Plugin {
   };
 }
 
+/** 服务工作线程（默认可为无顶层 import 的 ESM 兼容打包）。内容脚本见 `vite.config.content*.ts`。 */
 export default defineConfig({
   plugins: [copyManifest()],
   build: {
     emptyOutDir: !extensionWatch,
     minify: false,
+    outDir: "dist",
     rollupOptions: {
       input: {
-        content: resolve(__dirname, "src/app/content/index.ts"),
         "service-worker": resolve(__dirname, "src/app/service-worker/index.ts"),
       },
       output: {

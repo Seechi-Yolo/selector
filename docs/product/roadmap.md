@@ -26,4 +26,4 @@
 
 ## 文档同步
 
-实现发生变更时，须同步更新 [product-goal.md](./product-goal.md)、[../engineering/architecture-ddd.md](../engineering/architecture-ddd.md)、[../engineering/extension.md](../engineering/extension.md) 与 [capability-backlog.md](./capability-backlog.md)。里程碑收口时须更新本索引文件 [../README.md](../README.md)。
+实现发生变更时，须同步更新 [product-goal.md](./product-goal.md)、[usage-tutorial.md](./usage-tutorial.md)（与教程、首次引导相关时）、[../engineering/architecture-ddd.md](../engineering/architecture-ddd.md)、[../engineering/extension.md](../engineering/extension.md) 与 [capability-backlog.md](./capability-backlog.md)。里程碑收口时须更新本索引文件 [../README.md](../README.md)。

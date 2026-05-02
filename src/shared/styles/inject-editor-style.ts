@@ -7,8 +7,16 @@ export function injectEditorStyle(): void {
 
   const style = document.createElement("style");
   style.id = STYLE_ID;
-  style.textContent = cssText;
-  document.head.appendChild(style);
+  try {
+    style.appendChild(document.createTextNode(cssText));
+  } catch {
+    style.textContent = cssText;
+  }
+  try {
+    (document.head ?? document.documentElement).appendChild(style);
+  } catch {
+    /* 极端 CSP 下放弃全局样式，引导层仍可由 DOM 挂载（样式可能不完整） */
+  }
 }
 
 export function removeEditorStyle(): void {

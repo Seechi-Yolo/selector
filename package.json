@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc --noEmit && vite build && vite build --config vite.tutorial.config.ts",
+    "build": "tsc --noEmit && vite build && vite build --config vite.config.content.ts && vite build --config vite.tutorial.config.ts",
     "dev": "node scripts/extension-watch.mjs",
     "typecheck": "tsc --noEmit"
   },
