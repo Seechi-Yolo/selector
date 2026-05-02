@@ -1,0 +1,209 @@
+/* UI 沙盒：实验区与扩展页壳层令牌对齐 */
+
+:root {
+  --lab-carbon: #101010;
+  --lab-carbon-hot: #1a1a1c;
+  --lab-border: #3d3a39;
+  --lab-signal: #00d992;
+  --lab-mint: #2fd6a1;
+  --lab-snow: #f2f2f2;
+  --lab-steel: #8b949e;
+  --lab-purple: #818cf8;
+  --lab-dashed: rgba(79, 93, 117, 0.45);
+  --lab-radius: 12px;
+  --lab-font-mono: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* 实验岛：类 bento 卡片 + 信号顶边 */
+.sandbox-isle {
+  position: relative;
+  isolation: isolate;
+  contain: layout style;
+  margin-bottom: 20px;
+  padding: 0;
+  border-radius: var(--lab-radius);
+  border: 1px solid var(--lab-border);
+  background: linear-gradient(165deg, rgba(22, 22, 24, 0.95) 0%, rgba(14, 14, 16, 0.92) 100%);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.4) inset,
+    0 20px 48px rgba(0, 0, 0, 0.42);
+  overflow: hidden;
+  scroll-margin-top: 20px;
+}
+
+.sandbox-isle::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--lab-signal), var(--lab-purple));
+  opacity: 0.65;
+}
+
+.sandbox-isle-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid rgba(61, 58, 57, 0.85);
+  background: rgba(5, 5, 7, 0.35);
+}
+
+.sandbox-isle-title {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lab-steel);
+}
+
+.sandbox-isle-badge {
+  font-family: var(--lab-font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--lab-mint);
+  border: 1px solid rgba(0, 217, 146, 0.28);
+  background: rgba(0, 217, 146, 0.08);
+}
+
+.sandbox-isle-body {
+  position: relative;
+  min-height: 0;
+  padding: 18px 20px 20px;
+}
+
+.sandbox-isle-log {
+  margin: 0;
+  padding: 12px 16px 14px;
+  font-family: var(--lab-font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  background: rgba(5, 5, 7, 0.65);
+  color: #9ae6b4;
+  border-top: 1px solid var(--lab-border);
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+/* 兼容旧标题类（Editor 岛等） */
+.sandbox-isle .tutorial-sandbox-title {
+  margin: 0;
+}
+
+.tutorial-sandbox-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--lab-steel);
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+
+.tutorial-sandbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.tutorial-onboarding-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.tutorial-playground {
+  position: relative;
+  min-height: 220px;
+  border-radius: var(--lab-radius);
+  border: 1px dashed var(--lab-dashed);
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 0%, rgba(0, 217, 146, 0.07), transparent 62%),
+    var(--lab-carbon-hot);
+  padding: 18px;
+  margin-top: 0;
+  box-shadow: 0 0 40px rgba(0, 217, 146, 0.04) inset;
+}
+
+.tutorial-playground-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.tutorial-playground-toolbar button {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--lab-border);
+  background: rgba(16, 16, 16, 0.65);
+  color: var(--lab-snow);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.tutorial-playground-toolbar button:hover {
+  background: rgba(0, 0, 0, 0.35);
+  border-color: rgba(0, 217, 146, 0.45);
+  box-shadow: 0 0 0 1px rgba(0, 217, 146, 0.12);
+}
+
+.tutorial-playground-toolbar button:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.55);
+  outline-offset: 2px;
+}
+
+.tutorial-demo-block {
+  display: inline-block;
+  padding: 12px 18px;
+  margin: 8px 10px 0 0;
+  background: rgba(0, 217, 146, 0.09);
+  border: 1px solid rgba(0, 217, 146, 0.38);
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--lab-snow);
+  box-shadow: 0 0 24px rgba(0, 217, 146, 0.06);
+}
+
+.tutorial-anchor-btn {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 217, 146, 0.35);
+  background: rgba(0, 217, 146, 0.1);
+  color: var(--lab-mint);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.tutorial-anchor-btn:hover {
+  background: rgba(0, 217, 146, 0.16);
+  box-shadow: 0 0 20px rgba(0, 217, 146, 0.12);
+  border-color: var(--lab-signal);
+}
+
+.tutorial-anchor-btn:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.55);
+  outline-offset: 2px;
+}
+

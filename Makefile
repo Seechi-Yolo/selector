@@ -38,16 +38,17 @@ reset: ## Clean local dependencies and install again
 	rm -rf node_modules dist .vite $(PACKAGE_FILE)
 	npm install
 
-dev: ## Watch-build the extension during local development
+dev: ## Watch-build the extension (content + SW + 教程/沙盒页)
 	@printf "\nStarting extension watch build...\n\n"
+	@printf "First runs a full build, then watches main + tutorial Vite configs in parallel.\n"
 	@printf "After the first build finishes:\n"
 	@printf "1. Open Chrome and go to: chrome://extensions\n"
 	@printf "2. Enable Developer mode in the top-right corner\n"
 	@printf "3. Click Load unpacked\n"
 	@printf "4. Select this project directory's dist/ folder\n"
-	@printf "5. Open a target page, then click the Selector extension action or press Alt+Shift+S\n"
-	@printf "6. After code changes rebuild, click Reload on the Selector extension card\n\n"
-	npx vite build --watch
+	@printf "5. Extension menu: open 使用教程 / UI 沙盒 tabs, or use content script on a page\n"
+	@printf "6. After code changes, extension reloads from watch output; click Reload on the extension card if needed\n\n"
+	npm run dev
 
 build: ## Build the side-loadable MV3 extension into dist/
 	npm run build

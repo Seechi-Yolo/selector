@@ -15,6 +15,13 @@ interface EditorPanelCallbacks {
   onMinimizeChange(minimized: boolean): void;
 }
 
+export interface EditorPanelOptions {
+  /** 默认挂到 `document.body`（扩展内与网页右下角一致） */
+  mount?: HTMLElement;
+  /** `sandbox`：嵌入教程页等，取消 fixed，随文档流排版 */
+  layout?: "floating" | "sandbox";
+}
+
 const ICON_MINIMIZE =
   '<svg width="10" height="2" viewBox="0 0 10 2" fill="none"><line x1="0" y1="1" x2="10" y2="1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
 const ICON_EXPAND =
@@ -25,9 +32,12 @@ export class EditorPanel {
   private minimized = false;
   private copyTimer: number | null = null;
 
-  constructor(private readonly callbacks: EditorPanelCallbacks) {
+  constructor(private readonly callbacks: EditorPanelCallbacks, options?: EditorPanelOptions) {
     this.root = document.createElement("div");
     this.root.className = `${NS}-root ${NS}-chat`;
+    if (options?.layout === "sandbox") {
+      this.root.classList.add(`${NS}-chat--sandbox`);
+    }
     this.root.innerHTML = `
       <div class="${NS}-drag-handle">
         <span class="${NS}-drag-title">
@@ -58,7 +68,7 @@ export class EditorPanel {
         <button class="${NS}-copy-btn" disabled>Copy Prompt</button>
       </div>
     `;
-    document.body.appendChild(this.root);
+    (options?.mount ?? document.body).appendChild(this.root);
 
     this.copyButton.onclick = () => this.callbacks.onCopy();
     this.root.querySelector<HTMLButtonElement>('[data-action="minimize"]')!.onclick = () => this.toggleMinimize();

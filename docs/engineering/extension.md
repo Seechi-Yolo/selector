@@ -14,12 +14,15 @@
 
 | 页面 | 源码路径 | 构建产物 HTML 路径 |
 |------|----------|-------------------|
-| 教程 | `src/pages/tutorial/tutorial.html` | `dist/src/pages/tutorial/tutorial.html` |
+| 教程与沙箱顶栏 | `src/pages/help-hub/help-hub.html` | `dist/src/pages/help-hub/help-hub.html` |
+| 教程正文 | `src/pages/tutorial/tutorial.html` | `dist/src/pages/tutorial/tutorial.html` |
 | 沙箱 | `src/pages/sandbox/sandbox.html` | `dist/src/pages/sandbox/sandbox.html` |
 
-页面通过 `chrome.runtime.getURL` 解析为扩展内 URL 后打开。扩展内页面共用壳层样式文件 `src/pages/_shell/extension-page-shell.css`。
+扩展图标右键菜单仅含一项「使用教程与沙箱」，打开顶栏页；默认展示「使用教程」标签，内嵌教程 HTML；「沙箱」标签内嵌沙箱 HTML。教程与沙箱页面仍可通过 `chrome.runtime.getURL` 单独打开，用于开发与书签场景。
 
-扩展上下文菜单、教程与沙箱合一入口及双标签页行为以 [../prd/tutorial-and-sandbox.md](../prd/tutorial-and-sandbox.md) 为准。教程正文结构与资源命名须与 [../user/user-tutorial.md](../user/user-tutorial.md) 一致。
+页面通过 `chrome.runtime.getURL` 解析为扩展内 URL 后打开。教程页与沙箱页共用壳层样式文件 `src/pages/_shell/extension-page-shell.css`。顶栏页样式位于 `src/pages/help-hub/help-hub.css`。
+
+扩展上下文菜单与双标签页行为以 [../prd/tutorial-and-sandbox.md](../prd/tutorial-and-sandbox.md) 为准。教程正文结构与资源命名须与 [../user/user-tutorial.md](../user/user-tutorial.md) 一致。
 
 ## 验收
 

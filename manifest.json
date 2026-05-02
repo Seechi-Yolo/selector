@@ -3,8 +3,20 @@
   "name": "Selector",
   "description": "Point at any element, add instructions, and copy a local prompt for AI coding assistants.",
   "version": "0.1.0",
+  "icons": {
+    "16": "icons/selector-icon.svg",
+    "32": "icons/selector-icon.svg",
+    "48": "icons/selector-icon.svg",
+    "128": "icons/selector-icon.svg"
+  },
   "action": {
-    "default_title": "Open Selector"
+    "default_title": "Open Selector",
+    "default_icon": {
+      "16": "icons/selector-icon.svg",
+      "32": "icons/selector-icon.svg",
+      "48": "icons/selector-icon.svg",
+      "128": "icons/selector-icon.svg"
+    }
   },
   "background": {
     "service_worker": "assets/service-worker.js"

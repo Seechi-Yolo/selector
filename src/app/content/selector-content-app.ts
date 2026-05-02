@@ -47,8 +47,12 @@ export class SelectorContentApp {
   private rafPending = false;
   private lastMoveTarget: Element | null = null;
   private paused = false;
+  private started = false;
 
   init(): void {
+    if (this.started) return;
+    this.started = true;
+
     injectEditorStyle();
     assignElementIds(document.body);
     this.overlays.createHoverBox();

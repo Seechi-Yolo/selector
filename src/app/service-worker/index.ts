@@ -1,52 +1,56 @@
 const CONTENT_SCRIPT = "assets/content.js";
-const MENU_TUTORIAL_ID = "selector-context-tutorial";
-/** 与 content script 监听类型保持一致（勿改一半） */
-const SHOW_TUTORIAL_MESSAGE_TYPE = "selector:show-tutorial";
+const MENU_HELP_HUB_ID = "selector-context-help-hub";
+/** 与 `vite.tutorial.config.ts` 中 HTML 入口输出路径一致 */
+const HELP_HUB_URL = "src/pages/help-hub/help-hub.html";
 
 async function openSelector(tabId?: number): Promise<void> {
-  if (!tabId) return;
+  if (tabId == null) return;
 
-  await chrome.scripting.executeScript({
-    target: { tabId },
-    files: [CONTENT_SCRIPT],
-  });
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: [CONTENT_SCRIPT],
+    });
+  } catch {
+    /* 当前标签不可注入时 executeScript 会 reject，避免未处理的 Promise 打挂 SW */
+  }
 }
 
 function registerActionContextMenu(): void {
   chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({
-      id: MENU_TUTORIAL_ID,
-      title: "查看使用教程",
-      contexts: ["action"],
-    });
+    if (chrome.runtime.lastError) {
+      return;
+    }
+    chrome.contextMenus.create(
+      {
+        id: MENU_HELP_HUB_ID,
+        title: "使用教程与沙箱",
+        contexts: ["action"],
+      },
+      () => {
+        void chrome.runtime.lastError;
+      },
+    );
   });
 }
 
 registerActionContextMenu();
 chrome.runtime.onInstalled.addListener(registerActionContextMenu);
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId !== MENU_TUTORIAL_ID || tab?.id == null) return;
-  const tabId = tab.id;
-
-  void (async () => {
-    try {
-      await openSelector(tabId);
-      await chrome.tabs.sendMessage(tabId, { type: SHOW_TUTORIAL_MESSAGE_TYPE });
-    } catch {
-      /* 页面不可注入或未收到消息时忽略 */
-    }
-  })();
+chrome.contextMenus.onClicked.addListener((info) => {
+  if (info.menuItemId !== MENU_HELP_HUB_ID) return;
+  chrome.tabs.create({ url: chrome.runtime.getURL(HELP_HUB_URL) });
 });
 
 chrome.action.onClicked.addListener((tab) => {
-  void openSelector(tab.id);
+  void openSelector(tab.id ?? undefined);
 });
 
 chrome.commands.onCommand.addListener((command) => {
   if (command !== "open-selector") return;
 
-  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-    void openSelector(tab && tab.id);
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs[0];
+    void openSelector(tab?.id);
   });
 });

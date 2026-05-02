@@ -6,6 +6,11 @@ const requiredFiles = [
   "dist/manifest.json",
   "dist/assets/content.js",
   "dist/assets/service-worker.js",
+  "dist/src/pages/tutorial/tutorial.html",
+  "dist/src/pages/sandbox/sandbox.html",
+  "dist/assets/tutorial-page.js",
+  "dist/assets/sandbox-page.js",
+  "dist/assets/extension-page-shell.js",
 ];
 
 async function assertFile(path) {

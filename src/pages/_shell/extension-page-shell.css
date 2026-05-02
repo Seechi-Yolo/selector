@@ -1,0 +1,478 @@
+/* 扩展内同源页：VoltAgent 令牌 + 类 React Bits 氛围（网格、光晕、分层景深），无外链字体 */
+
+:root {
+  --va-abyss: #050507;
+  --va-carbon: #101010;
+  --va-carbon-elevated: #141414;
+  --va-border: #3d3a39;
+  --va-signal: #00d992;
+  --va-mint: #2fd6a1;
+  --va-snow: #f2f2f2;
+  --va-parchment: #b8b3b0;
+  --va-steel: #8b949e;
+  --va-purple: #818cf8;
+  --va-dashed: rgba(79, 93, 117, 0.45);
+  --va-haze: rgba(92, 88, 85, 0.22);
+  --va-glow: rgba(0, 217, 146, 0.14);
+  --va-radius-lg: 12px;
+  --va-radius-md: 8px;
+  --va-radius-sm: 6px;
+  --va-font-display: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --va-font-body: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans",
+    Helvetica, Arial, sans-serif;
+  --va-font-mono: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--va-font-body);
+  line-height: 1.55;
+  color: var(--va-snow);
+  background: var(--va-abyss);
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0 0 64px;
+  min-height: 100vh;
+}
+
+/* --- 全页氛围层（网格 + 漂移光斑） --- */
+.ext-page {
+  position: relative;
+  min-height: 100vh;
+  isolation: isolate;
+}
+
+.ext-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: var(--va-abyss);
+  background-image:
+    linear-gradient(rgba(61, 58, 57, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(61, 58, 57, 0.35) 1px, transparent 1px),
+    radial-gradient(ellipse 90% 55% at 50% -15%, rgba(0, 217, 146, 0.16), transparent 52%),
+    radial-gradient(ellipse 55% 40% at 100% 0%, rgba(129, 140, 248, 0.09), transparent 50%),
+    radial-gradient(ellipse 45% 50% at 0% 85%, rgba(0, 217, 146, 0.06), transparent 55%);
+  background-size:
+    48px 48px,
+    48px 48px,
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  background-position: center, center, center, center, center;
+  mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 100%);
+}
+
+.ext-ambient::after {
+  content: "";
+  position: absolute;
+  inset: -20% -10%;
+  background: conic-gradient(from 120deg at 70% 40%, transparent, rgba(0, 217, 146, 0.04), transparent 40%);
+  animation: ext-ambient-spin 48s linear infinite;
+  opacity: 0.85;
+}
+
+@keyframes ext-ambient-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ext-ambient::after {
+    animation: none;
+    opacity: 0.35;
+  }
+}
+
+/* --- 主内容壳 --- */
+.tutorial-shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 20px 0;
+}
+
+/* --- Hero（大标题 + 标签行） --- */
+.tutorial-hero {
+  margin-bottom: 32px;
+  padding: 28px 28px 26px;
+  border-radius: var(--va-radius-lg);
+  border: 1px solid var(--va-border);
+  background: linear-gradient(145deg, rgba(20, 20, 20, 0.96) 0%, rgba(16, 16, 16, 0.88) 45%, rgba(10, 12, 14, 0.92) 100%);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.45) inset,
+    0 24px 64px rgba(0, 0, 0, 0.55),
+    0 0 80px var(--va-glow);
+}
+
+.tutorial-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-family: var(--va-font-display);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--va-steel);
+}
+
+.tutorial-hero-eyebrow::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--va-signal);
+  box-shadow: 0 0 10px var(--va-signal);
+}
+
+.tutorial-hero h1 {
+  margin: 0 0 14px;
+  font-family: var(--va-font-display);
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+  color: var(--va-snow);
+  background: linear-gradient(105deg, #ffffff 0%, var(--va-snow) 38%, var(--va-mint) 120%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tutorial-hero p {
+  margin: 0;
+  max-width: 52rem;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--va-parchment);
+}
+
+.tutorial-hero strong {
+  color: var(--va-mint);
+  font-weight: 600;
+}
+
+.tutorial-hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.tutorial-hero-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--va-steel);
+  border: 1px solid rgba(61, 58, 57, 0.85);
+  background: rgba(5, 5, 7, 0.55);
+}
+
+.tutorial-hero-pill--accent {
+  color: var(--va-mint);
+  border-color: rgba(0, 217, 146, 0.35);
+  background: rgba(0, 217, 146, 0.08);
+}
+
+/* --- 双栏：侧轨目录 + 正文 --- */
+.tutorial-docs-grid {
+  display: grid;
+  gap: 28px 36px;
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .tutorial-docs-grid {
+    grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+  }
+}
+
+.tutorial-rail {
+  position: relative;
+}
+
+@media (min-width: 900px) {
+  .tutorial-rail {
+    position: sticky;
+    top: 20px;
+  }
+}
+
+.tutorial-rail-inner {
+  padding: 16px 14px;
+  border-radius: var(--va-radius-md);
+  border: 1px solid var(--va-border);
+  background: rgba(16, 16, 16, 0.72);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 24px var(--va-haze);
+}
+
+.tutorial-rail-title {
+  display: block;
+  margin: 0 0 12px 4px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--va-steel);
+}
+
+.tutorial-rail-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 8px;
+  margin: 2px 0;
+  border-radius: var(--va-radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--va-parchment);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.tutorial-rail-link:hover {
+  color: var(--va-snow);
+  background: rgba(0, 0, 0, 0.35);
+  border-color: rgba(0, 217, 146, 0.22);
+}
+
+.tutorial-rail-link:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.55);
+  outline-offset: 2px;
+}
+
+.tutorial-rail-num {
+  flex-shrink: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-family: var(--va-font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--va-mint);
+  background: rgba(0, 217, 146, 0.1);
+  border: 1px solid rgba(0, 217, 146, 0.22);
+}
+
+.tutorial-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+/* --- 提示条 --- */
+.tutorial-note {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--va-parchment);
+  background: linear-gradient(90deg, rgba(76, 179, 212, 0.1), rgba(16, 16, 16, 0.92));
+  border: 1px solid rgba(76, 179, 212, 0.28);
+  border-left: 3px solid #4cb3d4;
+  border-radius: var(--va-radius-md);
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+.tutorial-note p {
+  margin: 0;
+}
+
+/* --- 章节卡片 --- */
+.tutorial-section {
+  position: relative;
+  scroll-margin-top: 24px;
+  background: rgba(16, 16, 16, 0.78);
+  border: 1px solid var(--va-border);
+  border-radius: var(--va-radius-md);
+  padding: 22px 22px 22px 24px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.tutorial-section::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--va-signal), rgba(129, 140, 248, 0.55));
+  opacity: 0.35;
+  transition: opacity 0.18s ease;
+}
+
+.tutorial-section:hover {
+  border-color: rgba(0, 217, 146, 0.35);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 217, 146, 0.08) inset;
+}
+
+.tutorial-section:hover::before {
+  opacity: 0.85;
+}
+
+.tutorial-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.tutorial-section-index {
+  font-family: var(--va-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--va-purple);
+  text-transform: uppercase;
+}
+
+.tutorial-section h2 {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--va-font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  color: var(--va-snow);
+}
+
+.tutorial-section p {
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+  line-height: 1.62;
+  color: var(--va-parchment);
+}
+
+.tutorial-section p:last-child {
+  margin-bottom: 0;
+}
+
+.tutorial-section code {
+  font-family: var(--va-font-mono);
+  font-size: 0.8125rem;
+  color: var(--va-mint);
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(61, 58, 57, 0.65);
+}
+
+/* --- 沙箱页：区块标题 --- */
+.sandbox-section-title {
+  margin: 8px 0 6px;
+  font-family: var(--va-font-display);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--va-steel);
+}
+
+.sandbox-lead {
+  margin: 0 0 22px;
+  font-size: 0.9375rem;
+  line-height: 1.62;
+  color: var(--va-parchment);
+  max-width: 56rem;
+}
+
+/* 沙箱首屏：构建与重载说明（次要层级） */
+.sandbox-hero-sub {
+  margin: 14px 0 0;
+  max-width: 52rem;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--va-steel);
+}
+
+.sandbox-hero-sub code {
+  font-family: var(--va-font-mono);
+  font-size: 0.75rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(61, 58, 57, 0.65);
+  color: var(--va-mint);
+}
+
+/* --- 兼容旧类名（沙箱内工具条等仍可引用） --- */
+.tutorial-nav-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.tutorial-nav-link {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-radius: var(--va-radius-sm);
+  border: 1px solid var(--va-border);
+  background: transparent;
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.tutorial-nav-link:hover {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(33, 196, 93, 0.5);
+  color: var(--va-mint);
+}
+
+.tutorial-nav-link-secondary {
+  background: var(--va-carbon);
+  color: var(--va-snow);
+  border: 1px solid var(--va-border);
+}
+
+.tutorial-nav-link-secondary:hover {
+  border-color: var(--va-signal);
+  color: var(--va-mint);
+}

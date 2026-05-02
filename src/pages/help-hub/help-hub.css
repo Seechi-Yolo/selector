@@ -1,0 +1,246 @@
+/* 教程 + 沙箱 顶栏：VoltAgent 令牌 + 类 React Bits 景深与「设备框」iframe */
+
+:root {
+  --va-abyss: #050507;
+  --va-carbon: #101010;
+  --va-carbon-2: #121214;
+  --va-border: #3d3a39;
+  --va-signal: #00d992;
+  --va-mint: #2fd6a1;
+  --va-snow: #f2f2f2;
+  --va-parchment: #b8b3b0;
+  --va-steel: #8b949e;
+  --va-purple: #818cf8;
+  --va-haze: rgba(92, 88, 85, 0.22);
+  --va-font-display: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --va-font-body: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans",
+    Helvetica, Arial, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  font-family: var(--va-font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--va-snow);
+  background: var(--va-abyss);
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.help-hub-root {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  isolation: isolate;
+}
+
+.help-hub-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--va-abyss);
+  background-image:
+    linear-gradient(rgba(61, 58, 57, 0.28) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(61, 58, 57, 0.28) 1px, transparent 1px),
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 217, 146, 0.12), transparent 55%),
+    radial-gradient(ellipse 50% 45% at 100% 10%, rgba(129, 140, 248, 0.08), transparent 50%);
+  background-size: 40px 40px, 40px 40px, 100% 100%, 100% 100%;
+  mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+}
+
+.help-hub-top {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--va-border);
+  background: linear-gradient(180deg, rgba(12, 12, 14, 0.92) 0%, rgba(8, 8, 10, 0.88) 100%);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* 单行顶栏：左品牌 | 中标签（视口水平居中）| 右占位对称 */
+.help-hub-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 12px;
+}
+
+.help-hub-bar-start {
+  display: flex;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.help-hub-bar-center {
+  display: flex;
+  justify-content: center;
+  justify-self: center;
+}
+
+.help-hub-bar-end {
+  min-width: 0;
+}
+
+.help-hub-brand {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.help-hub-brand-mark {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(0, 217, 146, 0.35));
+}
+
+.help-hub-brand-title {
+  flex-shrink: 0;
+  margin: 0;
+  font-family: var(--va-font-display);
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  color: var(--va-snow);
+  background: linear-gradient(100deg, #fff 0%, var(--va-snow) 40%, var(--va-mint) 130%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.help-hub-brand-sub {
+  margin: 0;
+  padding-left: 10px;
+  border-left: 1px solid rgba(61, 58, 57, 0.95);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--va-steel);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .help-hub-brand-sub {
+    display: none;
+  }
+
+  .help-hub-bar {
+    column-gap: 8px;
+  }
+
+  .help-hub-tab {
+    padding: 9px 14px;
+    font-size: 0.75rem;
+  }
+}
+
+.help-hub-tabs {
+  display: inline-flex;
+  gap: 6px;
+  margin-bottom: 0;
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid rgba(61, 58, 57, 0.85);
+  background: rgba(5, 5, 7, 0.55);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35) inset;
+}
+
+.help-hub-tab {
+  appearance: none;
+  margin: 0;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--va-steel);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  transition:
+    color 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.help-hub-tab:hover {
+  color: var(--va-parchment);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.help-hub-tab[aria-selected="true"] {
+  color: var(--va-abyss);
+  background: linear-gradient(165deg, var(--va-mint) 0%, #1ed9a8 100%);
+  border-color: rgba(0, 217, 146, 0.55);
+  box-shadow:
+    0 0 20px rgba(0, 217, 146, 0.25),
+    0 1px 0 rgba(255, 255, 255, 0.12) inset;
+}
+
+.help-hub-tab:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.55);
+  outline-offset: 2px;
+}
+
+.help-hub-panels {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 18px;
+  background: linear-gradient(180deg, var(--va-carbon-2) 0%, var(--va-abyss) 55%);
+}
+
+.help-hub-frame {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  display: none;
+  border-radius: 14px;
+  background: var(--va-carbon);
+  border: 1px solid rgba(61, 58, 57, 0.95);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5) inset,
+    0 28px 80px rgba(0, 0, 0, 0.55),
+    0 0 60px rgba(0, 217, 146, 0.06);
+}
+
+.help-hub-frame.help-hub-frame-visible {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .help-hub-tab {
+    transition: none;
+  }
+}

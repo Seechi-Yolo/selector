@@ -10,7 +10,7 @@
 | Annotation | 与选中元素绑定的文字说明 |
 | Prompt Composition | 将选中集合与标注合成为可复制文本；里程碑三起读取用户侧模板配置 |
 | Editor Shell | 编辑器面板、快捷键与选取流程协调；首次使用引导位于 `features/editor-onboarding` |
-| Bootstrap | 注入生命周期与激活入口；扩展内教程页与沙箱页为静态资源，与核心业务域解耦，详见 [extension.md](./extension.md) |
+| Bootstrap | 注入生命周期与激活入口；扩展内教程页、沙箱页与教程沙箱顶栏页为静态资源，与核心业务域解耦，详见 [extension.md](./extension.md) |
 
 选取与标注由应用层编排。提示词合成层仅读取上述上下文产出的模型。
 

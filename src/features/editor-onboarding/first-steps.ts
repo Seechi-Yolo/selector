@@ -1,4 +1,4 @@
-/** 前三步引导：打开扩展、面板总览、Selecting / Paused 与空格（与 docs/user-tutorial.md 对齐） */
+/** 前三步引导：打开扩展、面板总览、Selecting / Paused 与空格（与 docs/user/user-tutorial.md 对齐） */
 export interface OnboardingStepCopy {
   title: string;
   body: string;

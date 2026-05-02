@@ -2,6 +2,9 @@ import { copyFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { defineConfig, type Plugin } from "vite";
 
+/** `make dev` / `npm run dev` 在并行 watch 教程页时设为 1，避免主构建清空已生成的 `dist/src/pages/**` */
+const extensionWatch = process.env.SELECTOR_EXTENSION_WATCH === "1";
+
 function copyManifest(): Plugin {
   return {
     name: "copy-manifest",
@@ -16,7 +19,7 @@ function copyManifest(): Plugin {
 export default defineConfig({
   plugins: [copyManifest()],
   build: {
-    emptyOutDir: true,
+    emptyOutDir: !extensionWatch,
     minify: false,
     rollupOptions: {
       input: {

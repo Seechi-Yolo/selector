@@ -211,6 +211,14 @@
   user-select: none;
 }
 
+.ai-editor-chat.ai-editor-chat--sandbox {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  z-index: 1;
+  max-width: 100%;
+}
+
 /* ── Drag handle ─────────────────────────────────────────── */
 .ai-editor-drag-handle {
   height: 32px;
@@ -572,4 +580,19 @@
 
 .ai-editor-onboarding-next:hover {
   background: #333;
+}
+
+/* 独立教程页：并列静态引导卡片 */
+.ai-editor-onboarding.ai-editor-onboarding--static {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+  max-width: 320px;
+}
+
+.ai-editor-onboarding-static-hint {
+  margin: 0;
+  font-size: 10px;
+  color: #aaa;
 }

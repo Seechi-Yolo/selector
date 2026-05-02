@@ -11,6 +11,8 @@ npm install
 npm run build
 ```
 
+`make build` is equivalent to `npm run build` (TypeScript + main Vite + extension pages Vite). **`make dev` / `npm run dev`** runs a full build once, then watches **both** bundles so `dist/src/pages/**` (tutorial, sandbox, help-hub) is not wiped while the main bundle is watching.
+
 Then open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select `dist/`.
 
 ## Usage
