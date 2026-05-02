@@ -1,5 +1,7 @@
 # 浏览器扩展
 
+**✅ 阶段一**：MV3、`manifest.json`、content script 注入与 `dist/` 侧载路径已实现；具体字段与构建步骤以仓库根 `manifest.json`、`README.md` 为准。
+
 ## 运行时
 
 MV3：`manifest.json`、图标。主逻辑在 **content script**；CSS 随扩展注入或 `css` 引用。**Service worker** 处理 `action` / `commands` / 按需 `scripting`；领域逻辑放在共享模块，由 content script 执行。
