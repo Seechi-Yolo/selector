@@ -96,7 +96,7 @@ export function SelectionSessionPanel(props: SelectionSessionPanelProps) {
       <header className="sel-session-drag" data-sel-drag-handle>
         <div className="sel-session-title">
           <span className="sel-session-dot" data-paused={paused ? "1" : "0"} />
-          <span className="sel-session-status">{paused ? "已暂停选取" : "选取"}</span>
+          <span className="sel-session-status">UI Prompt Builder</span>
         </div>
         <div className="sel-session-actions">
           {!props.minimized ? (
@@ -107,16 +107,44 @@ export function SelectionSessionPanel(props: SelectionSessionPanelProps) {
                 e.stopPropagation();
                 cycleTab();
               }}
-              title={mainTab === "prompt" ? "切换到当前选中" : "切换到提示"}
-              aria-label={mainTab === "prompt" ? "切换到当前选中" : "切换到提示"}
+              title={
+                mainTab === "prompt"
+                  ? "切换到「当前选中」：查看已选列表，并可将某一项设为键盘焦点"
+                  : "切换到「提示」：查看操作说明与快捷键提示"
+              }
+              aria-label={
+                mainTab === "prompt"
+                  ? "切换到「当前选中」：查看已选列表，并可将某一项设为键盘焦点"
+                  : "切换到「提示」：查看操作说明与快捷键提示"
+              }
             >
               {ICON_TAB_SWAP}
             </button>
           ) : null}
-          <button type="button" className="sel-session-icon-btn" onClick={props.onMinimize} title="最小化">
+          <button
+            type="button"
+            className="sel-session-icon-btn"
+            onClick={props.onMinimize}
+            title={
+              props.minimized
+                ? "展开面板：恢复完整宽度与操作区，面板回到展开前位置附近"
+                : "最小化面板：缩成右侧竖条，仍磁吸在页面右侧，可拖动调整上下位置"
+            }
+            aria-label={
+              props.minimized
+                ? "展开面板：恢复完整宽度与操作区，面板回到展开前位置附近"
+                : "最小化面板：缩成右侧竖条，仍磁吸在页面右侧，可拖动调整上下位置"
+            }
+          >
             {props.minimized ? ICON_EXPAND : ICON_MINIMIZE}
           </button>
-          <button type="button" className="sel-session-icon-btn" onClick={props.onClose} title="关闭">
+          <button
+            type="button"
+            className="sel-session-icon-btn"
+            onClick={props.onClose}
+            title="关闭会话：清除页上选取并结束本次选取，扩展面板将收起"
+            aria-label="关闭会话：清除页上选取并结束本次选取，扩展面板将收起"
+          >
             {ICON_CLOSE}
           </button>
         </div>
@@ -124,18 +152,25 @@ export function SelectionSessionPanel(props: SelectionSessionPanelProps) {
 
       <div className="sel-session-body">
         {mainTab === "prompt" ? (
-          <section className="sel-session-guidance" aria-label="操作引导">
-            <p className="sel-session-guidance-primary">
-              {guidance.primaryUseShiny ? (
-                <ShinyText text={guidance.primaryText} durationSec={6} />
-              ) : (
-                guidance.primaryText
-              )}
-            </p>
+          <section
+            className={
+              "sel-session-guidance" +
+              (guidance.prominentHint ? " sel-session-guidance--prominent-hint" : "")
+            }
+            aria-label="操作引导"
+          >
+            {guidance.primaryText.trim().length > 0 ? (
+              <p className="sel-session-guidance-primary">
+                {guidance.primaryUseShiny ? (
+                  <ShinyText text={guidance.primaryText} durationSec={6} />
+                ) : (
+                  guidance.primaryText
+                )}
+              </p>
+            ) : null}
             {secondaryNodes.length > 0 ? (
               <div className="sel-session-guidance-secondary">{secondaryNodes}</div>
             ) : null}
-            {props.toastMessage ? <div className="sel-session-toast">{props.toastMessage}</div> : null}
           </section>
         ) : (
           <div className="sel-session-selected-stack">
@@ -153,6 +188,20 @@ export function SelectionSessionPanel(props: SelectionSessionPanelProps) {
                         data-focus={isFocus ? "1" : "0"}
                         role={props.tags.length > 1 ? "button" : undefined}
                         tabIndex={props.tags.length > 1 ? 0 : undefined}
+                        title={
+                          props.tags.length > 1
+                            ? isFocus
+                              ? "当前焦点项：方向键以此项为锚点移动；Enter 可打开该项的修改说明"
+                              : "点击设为焦点项：之后方向键与 Enter 修改说明均针对此项"
+                            : undefined
+                        }
+                        aria-label={
+                          props.tags.length > 1
+                            ? isFocus
+                              ? "当前焦点项：方向键以此项为锚点移动；Enter 可打开该项的修改说明"
+                              : "点击设为焦点项：之后方向键与 Enter 修改说明均针对此项"
+                            : undefined
+                        }
                         onClick={() => {
                           if (props.tags.length > 1) props.onTagFocusRequest(tag.id);
                         }}
@@ -176,6 +225,11 @@ export function SelectionSessionPanel(props: SelectionSessionPanelProps) {
             </section>
           </div>
         )}
+        {props.toastMessage ? (
+          <div className="sel-session-toast" role="status">
+            {props.toastMessage}
+          </div>
+        ) : null}
       </div>
     </div>
   );

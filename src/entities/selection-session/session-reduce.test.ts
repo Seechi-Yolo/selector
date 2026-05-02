@@ -3,7 +3,7 @@ import { CONSECUTIVE_EXIT_WINDOW_MS } from "./session-constants";
 import { createSessionReduceSeed, reduceSelectionSession } from "./session-reduce";
 
 describe("Selection session reducer (appendix A, D-10–D-13, D-11)", () => {
-  it("Given 空会话 When immediate_select 一项 Then 逐项 O 且 wholeSetFlow idle", () => {
+  it("Given 空会话 When immediate_select 一项 Then 默认 N（不自动开说明）且 wholeSetFlow idle", () => {
     let { state, clipboard } = createSessionReduceSeed();
     const out = reduceSelectionSession(state, clipboard, {
       type: "immediate_select",
@@ -12,14 +12,14 @@ describe("Selection session reducer (appendix A, D-10–D-13, D-11)", () => {
       atMs: 0,
     });
     expect(out.state.selectionCount).toBe(1);
-    expect(out.state.instructionOpen).toBe(true);
+    expect(out.state.instructionOpen).toBe(false);
     expect(out.state.activeLayer).toBe("per_item");
     expect(out.state.wholeSetFlow).toBe("idle");
     ({ state, clipboard } = out);
     expect(clipboard.flushAtMs).toBe(500);
   });
 
-  it("Given 框选形成期 When marquee_commit ≥2 Then 整体 O 且 whole_required", () => {
+  it("Given 框选形成期 When marquee_commit ≥2 Then 默认 N 且 whole_required", () => {
     let { state, clipboard } = createSessionReduceSeed();
     ({ state, clipboard } = reduceSelectionSession(state, clipboard, { type: "marquee_begin" }));
     const out = reduceSelectionSession(state, clipboard, {
@@ -28,7 +28,7 @@ describe("Selection session reducer (appendix A, D-10–D-13, D-11)", () => {
       focusElementId: "b",
       atMs: 10,
     });
-    expect(out.state.instructionOpen).toBe(true);
+    expect(out.state.instructionOpen).toBe(false);
     expect(out.state.activeLayer).toBe("whole_set");
     expect(out.state.wholeSetFlow).toBe("whole_required");
   });
@@ -45,7 +45,7 @@ describe("Selection session reducer (appendix A, D-10–D-13, D-11)", () => {
     expect(out.state.instructionOpen).toBe(false);
   });
 
-  it("Given Shift 安静期提交 When shift_quiet_commit Then 打开整体 O", () => {
+  it("Given Shift 安静期提交 When shift_quiet_commit Then 默认 N 且 whole_required", () => {
     let { state, clipboard } = createSessionReduceSeed();
     ({ state, clipboard } = reduceSelectionSession(state, clipboard, {
       type: "shift_selection_change",
@@ -59,7 +59,7 @@ describe("Selection session reducer (appendix A, D-10–D-13, D-11)", () => {
       focusElementId: "x",
       atMs: 600,
     });
-    expect(out.state.instructionOpen).toBe(true);
+    expect(out.state.instructionOpen).toBe(false);
     expect(out.state.activeLayer).toBe("whole_set");
   });
 
@@ -70,6 +70,10 @@ describe("Selection session reducer (appendix A, D-10–D-13, D-11)", () => {
       count: 1,
       focusElementId: "a",
       atMs: 0,
+    }));
+    ({ state, clipboard } = reduceSelectionSession(state, clipboard, {
+      type: "open_instruction_via_edit_badge",
+      atMs: 1,
     }));
     const out = reduceSelectionSession(state, clipboard, { type: "esc", atMs: 50 });
     expect(out.state.instructionOpen).toBe(false);
@@ -86,6 +90,10 @@ describe("Selection session reducer (appendix A, D-10–D-13, D-11)", () => {
       focusElementId: "a",
       atMs: 0,
     }));
+    ({ state, clipboard } = reduceSelectionSession(state, clipboard, {
+      type: "open_instruction_via_edit_badge",
+      atMs: 1,
+    }));
     const out = reduceSelectionSession(state, clipboard, { type: "instruction_surface_close", atMs: 10 });
     expect(out.state.instructionOpen).toBe(false);
     expect(out.state.escClearGate).toBe("none");
@@ -100,6 +108,10 @@ describe("Selection session reducer (appendix A, D-10–D-13, D-11)", () => {
       focusElementId: "a",
       atMs: 0,
     }));
+    ({ state, clipboard } = reduceSelectionSession(state, clipboard, {
+      type: "open_instruction_via_edit_badge",
+      atMs: 1,
+    }));
     const out = reduceSelectionSession(state, clipboard, { type: "marquee_begin" });
     expect(out.state.instructionOpen).toBe(false);
     expect(out.state.formation.kind).toBe("marquee");
@@ -112,6 +124,10 @@ describe("Selection session reducer (appendix A, D-10–D-13, D-11)", () => {
       count: 1,
       focusElementId: "a",
       atMs: 0,
+    }));
+    ({ state, clipboard } = reduceSelectionSession(state, clipboard, {
+      type: "open_instruction_via_edit_badge",
+      atMs: 1,
     }));
     ({ state, clipboard } = reduceSelectionSession(state, clipboard, { type: "esc", atMs: 0 }));
     const out = reduceSelectionSession(state, clipboard, {
@@ -157,7 +173,11 @@ describe("Selection session reducer (appendix A, D-10–D-13, D-11)", () => {
       focusElementId: "a",
       atMs: 0,
     }));
-    const out = reduceSelectionSession(state, clipboard, { type: "open_instruction_via_edit_badge", atMs: 1 });
+    ({ state, clipboard } = reduceSelectionSession(state, clipboard, {
+      type: "open_whole_set_instruction_badge",
+      atMs: 1,
+    }));
+    const out = reduceSelectionSession(state, clipboard, { type: "open_instruction_via_edit_badge", atMs: 2 });
     expect(out.state.instructionOpen).toBe(true);
     expect(out.state.activeLayer).toBe("whole_set");
     expect(out.state.wholeSetFlow).toBe("whole_required");
@@ -171,8 +191,12 @@ describe("Selection session reducer (appendix A, D-10–D-13, D-11)", () => {
       focusElementId: "a",
       atMs: 0,
     }));
+    ({ state, clipboard } = reduceSelectionSession(state, clipboard, {
+      type: "open_whole_set_instruction_badge",
+      atMs: 1,
+    }));
     ({ state, clipboard } = reduceSelectionSession(state, clipboard, { type: "finalize_whole_set_instruction" }));
-    const out = reduceSelectionSession(state, clipboard, { type: "open_instruction_via_edit_badge", atMs: 1 });
+    const out = reduceSelectionSession(state, clipboard, { type: "open_instruction_via_edit_badge", atMs: 2 });
     expect(out.state.instructionOpen).toBe(true);
     expect(out.state.activeLayer).toBe("per_item");
   });

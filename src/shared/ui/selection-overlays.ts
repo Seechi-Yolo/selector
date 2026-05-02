@@ -9,28 +9,22 @@ export type SelectionOverlayViz = {
   wholeSetFlow: WholeSetFlow;
 };
 
-export type InstructionEditRequest =
-  | { kind: "per_item"; id: string; anchor: HTMLButtonElement }
-  | { kind: "whole_union"; anchor: HTMLButtonElement };
-
 interface SelectionOverlay {
   box: HTMLDivElement;
   corners: HTMLDivElement[];
   label: HTMLDivElement;
-  editButton: HTMLButtonElement;
+  enterHint: HTMLDivElement;
 }
 
 interface UnionOverlay {
   box: HTMLDivElement;
-  editButton: HTMLButtonElement;
+  enterHint: HTMLDivElement;
 }
 
 export class SelectionOverlays {
   private hoverBox: HTMLDivElement | null = null;
   private overlays = new Map<string, SelectionOverlay>();
   private union: UnionOverlay | null = null;
-
-  constructor(private readonly onEditInstruction: (req: InstructionEditRequest) => void) {}
 
   createHoverBox(): void {
     this.hoverBox = document.createElement("div");
@@ -70,11 +64,9 @@ export class SelectionOverlays {
       this.ensureUnion();
     }
 
-    const perItemEditBlocked = selectedIds.length >= 2 && viz.wholeSetFlow !== "whole_done";
-
     for (const id of selectedIds) {
       if (!this.overlays.has(id)) this.createOverlay(id);
-      this.positionOverlay(id, hasAnnotation(id), viz, perItemEditBlocked);
+      this.positionOverlay(id, hasAnnotation(id), viz, selectedIds.length);
     }
 
     if (selectedIds.length >= 2) {
@@ -83,8 +75,9 @@ export class SelectionOverlays {
   }
 
   positionAll(selectedIds: string[], hasAnnotation: (id: string) => boolean, viz: SelectionOverlayViz): void {
-    const perItemEditBlocked = selectedIds.length >= 2 && viz.wholeSetFlow !== "whole_done";
-    for (const id of selectedIds) this.positionOverlay(id, hasAnnotation(id), viz, perItemEditBlocked);
+    for (const id of selectedIds) {
+      this.positionOverlay(id, hasAnnotation(id), viz, selectedIds.length);
+    }
     if (selectedIds.length >= 2) this.positionUnion(selectedIds, viz);
   }
 
@@ -99,27 +92,21 @@ export class SelectionOverlays {
     if (this.union) return;
     const box = document.createElement("div");
     box.className = `${NS}-sel-box ${NS}-sel-box--union`;
-    const editButton = document.createElement("button");
-    editButton.type = "button";
-    editButton.className = `${NS}-root ${NS}-edit-instruction-btn ${NS}-edit-instruction-btn--union`;
-    editButton.textContent = "编辑说明";
-    editButton.title = "编辑说明：对当前选取的说明";
-    editButton.setAttribute("aria-label", "编辑说明：对当前选取的说明");
-    editButton.addEventListener("click", (event) => {
-      event.stopPropagation();
-      event.preventDefault();
-      if (editButton.disabled) return;
-      this.onEditInstruction({ kind: "whole_union", anchor: editButton });
-    });
+
+    const enterHint = document.createElement("div");
+    enterHint.className = `${NS}-root ${NS}-sel-enter-hint ${NS}-sel-enter-hint--union`;
+    enterHint.textContent = "Enter 输入整段说明";
+    enterHint.setAttribute("aria-hidden", "true");
+
     document.body.appendChild(box);
-    document.body.appendChild(editButton);
-    this.union = { box, editButton };
+    document.body.appendChild(enterHint);
+    this.union = { box, enterHint };
   }
 
   private destroyUnion(): void {
     if (!this.union) return;
     this.union.box.remove();
-    this.union.editButton.remove();
+    this.union.enterHint.remove();
     this.union = null;
   }
 
@@ -145,11 +132,11 @@ export class SelectionOverlays {
     this.union.box.style.width = `${u.maxX - u.minX + pad * 2}px`;
     this.union.box.style.height = `${u.maxY - u.minY + pad * 2}px`;
 
-    const btn = this.union.editButton;
-    btn.style.top = `${u.minY - pad - 2}px`;
-    btn.style.left = `${u.maxX + pad - 72}px`;
-    btn.disabled = viz.paused;
-    btn.classList.toggle(`${NS}-edit-instruction-btn--paused`, viz.paused);
+    const hint = this.union.enterHint;
+    hint.style.top = `${u.maxY + pad + 6}px`;
+    hint.style.left = "auto";
+    hint.style.right = `${window.innerWidth - u.maxX - pad}px`;
+    hint.classList.toggle(`${NS}-sel-enter-hint--paused`, viz.paused);
 
     const pausedClass = `${NS}-sel-box--paused`;
     this.union.box.classList.toggle(pausedClass, viz.paused);
@@ -175,30 +162,22 @@ export class SelectionOverlays {
     label.className = `${NS}-sel-label`;
     label.textContent = elementLabel(el);
 
-    const editButton = document.createElement("button");
-    editButton.type = "button";
-    editButton.className = `${NS}-root ${NS}-edit-instruction-btn`;
-    editButton.textContent = "编辑说明";
-    editButton.title = "编辑说明：修改说明";
-    editButton.setAttribute("aria-label", "编辑说明：修改说明");
-    editButton.addEventListener("click", (event) => {
-      event.stopPropagation();
-      event.preventDefault();
-      if (editButton.disabled) return;
-      this.onEditInstruction({ kind: "per_item", id, anchor: editButton });
-    });
+    const enterHint = document.createElement("div");
+    enterHint.className = `${NS}-root ${NS}-sel-enter-hint`;
+    enterHint.textContent = "Enter 输入修改说明";
+    enterHint.setAttribute("aria-hidden", "true");
 
     document.body.appendChild(box);
     document.body.appendChild(label);
-    document.body.appendChild(editButton);
-    this.overlays.set(id, { box, corners, label, editButton });
+    document.body.appendChild(enterHint);
+    this.overlays.set(id, { box, corners, label, enterHint });
   }
 
   private positionOverlay(
     id: string,
     hasAnnotation: boolean,
     viz: SelectionOverlayViz,
-    perItemEditBlocked: boolean,
+    totalSelected: number,
   ): void {
     const el = byElementId(id);
     const overlay = this.overlays.get(id);
@@ -228,8 +207,17 @@ export class SelectionOverlays {
 
     overlay.label.style.top = `${rect.top - pad - 20}px`;
     overlay.label.style.left = `${rect.left - pad}px`;
-    overlay.editButton.style.top = `${rect.top - pad - 24}px`;
-    overlay.editButton.style.left = `${rect.right + pad + 4}px`;
+
+    const hint = overlay.enterHint;
+    const showSingleHint = totalSelected === 1;
+    hint.style.display = showSingleHint ? "" : "none";
+    if (showSingleHint) {
+      hint.style.top = `${rect.bottom + pad + 6}px`;
+      hint.style.left = "auto";
+      hint.style.right = `${window.innerWidth - rect.right - pad}px`;
+      hint.classList.toggle(`${NS}-sel-enter-hint--paused`, viz.paused);
+      hint.classList.toggle(`${NS}-sel-enter-hint--has-note`, hasAnnotation);
+    }
 
     const pausedClass = `${NS}-sel-box--paused`;
     const focusClass = `${NS}-sel-box--focus`;
@@ -244,16 +232,6 @@ export class SelectionOverlays {
     });
 
     overlay.label.classList.toggle(`${NS}-sel-label--paused`, viz.paused);
-    overlay.editButton.classList.toggle(`${NS}-edit-instruction-btn--paused`, viz.paused);
-    overlay.editButton.classList.toggle(`${NS}-edit-instruction-btn--blocked`, perItemEditBlocked);
-    overlay.editButton.disabled = viz.paused || perItemEditBlocked;
-    if (perItemEditBlocked) {
-      editButtonTitle(overlay.editButton, "请先完成「对当前选取的说明」后再编辑逐项修改说明");
-    } else {
-      editButtonTitle(overlay.editButton, "编辑说明：修改说明");
-    }
-
-    overlay.editButton.classList.toggle(`${NS}-edit-instruction-btn--has-note`, hasAnnotation);
   }
 
   private destroyOverlay(id: string): void {
@@ -263,12 +241,7 @@ export class SelectionOverlays {
     overlay.box.remove();
     overlay.corners.forEach((corner) => corner.remove());
     overlay.label.remove();
-    overlay.editButton.remove();
+    overlay.enterHint.remove();
     this.overlays.delete(id);
   }
-}
-
-function editButtonTitle(btn: HTMLButtonElement, title: string): void {
-  btn.title = title;
-  btn.setAttribute("aria-label", title);
 }

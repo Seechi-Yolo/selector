@@ -21,7 +21,7 @@ describe("mapSelectionSessionToPresentation", () => {
     }));
     const p = mapSelectionSessionToPresentation({ session: state, userHasManualCopiedOnce: false });
     expect(p.wholeSetGate).toBe("blocked_until_done");
-    expect(p.instructionSurface).toBe("whole_set");
+    expect(p.instructionSurface).toBe("closed");
   });
 
   it("Given D-15 未手动复制 Then 不展示剪贴板辅句", () => {

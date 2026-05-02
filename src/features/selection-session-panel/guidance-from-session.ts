@@ -13,6 +13,8 @@ export interface SessionGuidanceView {
   primaryText: string;
   primaryUseShiny: boolean;
   secondaries: SessionGuidanceSecondary[];
+  /** 单选未开说明：仅方向键 + Esc 时放大辅句字号 */
+  prominentHint?: boolean;
 }
 
 const T = (value: string): GuidanceChunk => ({ kind: "text", value });
@@ -29,7 +31,7 @@ function lineClip(userHasManualCopiedOnce: boolean): SessionGuidanceSecondary | 
 
 /**
  * PRD D-09 / **D-24**：主句极短；辅句极少。
- * 说明输入框内快捷键见画布浮动层（Enter / ⌘Ctrl+Delete 等），此处不重复。
+ * 单选未开说明时仅提示方向键与 Esc；多选未开说明时主句仍提示 Enter 开说明。
  */
 export function guidanceFromSession(input: {
   session: SelectionSessionState;
@@ -67,18 +69,22 @@ export function guidanceFromSession(input: {
   if (!instructionOpen) {
     const secondaries: SessionGuidanceSecondary[] = [];
     if (selectionCount >= 2 && wholeSetFlow === "whole_required") {
-      secondaries.push(sec("whole", T("先点包络「编辑说明」整段")));
+      secondaries.push(sec("whole", K("Enter"), T(" 整段 · "), T("包络角标")));
     } else if (selectionCount === 1) {
-      secondaries.push(sec("arrows", K("↑↓←→"), T(" 移焦点")));
+      secondaries.push(sec("arrows-move", K("↑↓←→"), T(" 移焦点")));
+      secondaries.push(sec("esc-clear", K("ESC"), T(" 取消选中")));
     }
-    secondaries.push(sec("prune", K("Del"), T(" 删项 · "), K("⌘/Ctrl+Del"), T(" 清光")));
-    secondaries.push(sec("esc", K("Esc"), T(" 退出/清空")));
+    if (selectionCount >= 2) {
+      secondaries.push(sec("esc", K("ESC"), T(" 取消选中")));
+    }
     const clip = lineClip(userHasManualCopiedOnce);
     if (clip) secondaries.push(clip);
+    const singleNoInstruction = selectionCount === 1;
     return {
-      primaryText: "角标开说明",
+      primaryText: singleNoInstruction ? "" : "Enter 开说明",
       primaryUseShiny: false,
       secondaries,
+      prominentHint: singleNoInstruction,
     };
   }
 

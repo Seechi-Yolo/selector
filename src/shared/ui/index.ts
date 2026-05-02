@@ -4,8 +4,4 @@ export {
   type InstructionCanvasDockCallbacks,
   type InstructionCanvasDockLayer,
 } from "./instruction-canvas-dock";
-export {
-  SelectionOverlays,
-  type InstructionEditRequest,
-  type SelectionOverlayViz,
-} from "./selection-overlays";
+export { SelectionOverlays, type SelectionOverlayViz } from "./selection-overlays";

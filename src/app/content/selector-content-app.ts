@@ -34,7 +34,6 @@ import { NS } from "../../shared/dom/constants";
 import {
   InstructionCanvasDock,
   SelectionOverlays,
-  type InstructionEditRequest,
   type InstructionCanvasDockLayer,
   type SelectionOverlayViz,
 } from "../../shared/ui";
@@ -57,7 +56,7 @@ interface DragState {
 export class SelectorContentApp {
   private readonly controller = new SelectionController();
   private readonly clipboard = new BrowserClipboard();
-  private readonly overlays = new SelectionOverlays((req) => this.handleInstructionEditRequest(req));
+  private readonly overlays = new SelectionOverlays();
   private readonly listeners: ListenerRecord[] = [];
   private panel: EditorPanel | null = null;
   private onboarding: EditorOnboarding | null = null;
@@ -109,6 +108,7 @@ export class SelectorContentApp {
           this.dispatchSession({ type: "instruction_surface_close", atMs: Date.now() });
         }
         this.render();
+        this.notifyClipboardAfterInstructionSubmit();
       },
       onCtrlDeleteClear: () => {
         if (this.session.activeLayer === "whole_set") {
@@ -275,9 +275,10 @@ export class SelectorContentApp {
     };
   }
 
-  private async flushClipboardDebounced(): Promise<void> {
+  /** 取消防抖后立刻按当前会话写剪贴板；返回是否实际写入非空提示词 */
+  private async flushClipboardDebounced(): Promise<boolean> {
     const snap = this.controller.snapshot();
-    if (snap.selectedIds.length === 0) return;
+    if (snap.selectedIds.length === 0) return false;
     const overall = this.session.drafts.selectionLevelBody.trim();
     const merged = this.mergeAnnotationsForPrompt(snap);
     if (
@@ -289,15 +290,25 @@ export class SelectorContentApp {
         selectionLevelInstruction: overall.length > 0 ? overall : undefined,
       })
     ) {
-      return;
+      return false;
     }
-    await copyPrompt({
+    return await copyPrompt({
       selectedIds: snap.selectedIds,
       annotations: merged,
       pagePath: location.pathname,
       contextReader: { read: buildElementContext },
       clipboard: this.clipboard,
       selectionLevelInstruction: overall.length > 0 ? overall : undefined,
+    });
+  }
+
+  /** 说明层 Enter 提交后：避免与 D-08 防抖重复写入，并在成功写入时于「提示」区展示已复制反馈 */
+  private notifyClipboardAfterInstructionSubmit(): void {
+    this.clearClipboardFlushTimer();
+    void this.flushClipboardDebounced().then((copied) => {
+      if (copied) {
+        this.panel?.showCopyFeedback("已复制提示词");
+      }
     });
   }
 
@@ -522,6 +533,30 @@ export class SelectorContentApp {
       return;
     }
 
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      !this.session.instructionOpen &&
+      this.hasSelections() &&
+      !this.isPaused() &&
+      !isHostNativeEditableSurface(event.target) &&
+      !isExtensionUiSurface(event.target)
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      const n = this.session.selectionCount;
+      if (n >= 2 && this.session.wholeSetFlow === "whole_required") {
+        this.dispatchSession({ type: "open_whole_set_instruction_badge", atMs: Date.now() });
+      } else {
+        this.dispatchSession({ type: "open_instruction_via_edit_badge", atMs: Date.now() });
+      }
+      this.render();
+      return;
+    }
+
     const mod = event.metaKey || event.ctrlKey;
 
     if (mod && event.key.toLowerCase() === "c" && !event.shiftKey && this.hasSelections()) {
@@ -659,7 +694,7 @@ export class SelectorContentApp {
 
     if (copied) {
       this.panel?.setUserHasManualCopiedOnce(true);
-      this.panel?.showCopyFeedback("已复制复制提示词");
+      this.panel?.showCopyFeedback("已复制提示词");
     }
   }
 
@@ -762,23 +797,5 @@ export class SelectorContentApp {
   private cancelDrag(): void {
     this.dragState?.marquee?.remove();
     this.dragState = null;
-  }
-
-  private handleInstructionEditRequest(req: InstructionEditRequest): void {
-    if (req.kind === "whole_union") {
-      this.dispatchSession({ type: "open_whole_set_instruction_badge", atMs: Date.now() });
-      this.render();
-      return;
-    }
-    if (this.session.selectionCount >= 2 && this.session.wholeSetFlow !== "whole_done") {
-      this.panel?.showCopyFeedback("请先完成对当前选取的说明");
-      return;
-    }
-    const snap = this.controller.snapshot();
-    if (snap.selectedIds.length > 1 && this.session.focusElementId !== req.id) {
-      this.dispatchSession({ type: "focus_change", focusElementId: req.id });
-    }
-    this.dispatchSession({ type: "open_instruction_via_edit_badge", atMs: Date.now() });
-    this.render();
   }
 }

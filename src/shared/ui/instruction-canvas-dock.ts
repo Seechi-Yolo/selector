@@ -10,7 +10,7 @@ export interface InstructionCanvasDockCallbacks {
 
 /**
  * 画布选取框正下方的「修改说明 / 对当前选取的说明」输入层（PRD D-22、D-23）。
- * Enter 提交、换行等提示放在输入区内侧，主面板「提示」不再重复。
+ * 默认不自动展示；宿主在页面上 **Enter** 打开后再显示。Enter 提交、换行等提示放在输入区内侧。
  */
 export class InstructionCanvasDock {
   private root: HTMLDivElement | null = null;

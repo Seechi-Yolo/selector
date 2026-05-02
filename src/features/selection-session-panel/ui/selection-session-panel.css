@@ -1,6 +1,6 @@
 /* PRD D-16 / D-27：极小面板（约为上一实现版约 1/2 量级） */
 .sel-volt.sel-session-panel {
-  width: min(168px, calc(100vw - 24px));
+  width: min(220px, calc(100vw - 24px));
   min-height: 108px;
   max-height: min(40vh, 360px);
   display: flex;
@@ -56,8 +56,12 @@
 .sel-session-status {
   font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   color: var(--sel-parchment);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sel-session-actions {
@@ -213,6 +217,24 @@
   border: 1px solid var(--sel-border);
   color: var(--sel-parchment);
   background: rgba(255, 255, 255, 0.04);
+}
+
+/* 单选未开说明：仅方向键 + Esc 时放大整段引导 */
+.sel-session-guidance--prominent-hint .sel-session-guidance-secondary {
+  font-size: 12px;
+  font-weight: 500;
+  gap: 6px;
+  color: var(--sel-snow);
+}
+
+.sel-session-guidance--prominent-hint .sel-session-guidance-secondary-line {
+  line-height: 1.5;
+}
+
+.sel-session-guidance--prominent-hint .sel-session-kbd {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .sel-session-toast {
