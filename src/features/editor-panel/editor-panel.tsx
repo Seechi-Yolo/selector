@@ -11,10 +11,9 @@ export interface EditorPanelOptions {
 }
 
 interface EditorPanelCallbacks {
-  /** 保留给快捷键复制；面板无常驻复制按钮（D-07） */
+  /** 保留给快捷键复制；面板无常驻复制按钮（I-07） */
   onCopy(): void;
   onClose(): void;
-  onMinimizeChange(minimized: boolean): void;
   onTagFocusRequest(tagId: PanelTag["id"]): void;
 }
 
@@ -25,12 +24,12 @@ export class EditorPanel {
   private readonly callbacks: EditorPanelCallbacks;
   private readonly layout: NonNullable<EditorPanelOptions["layout"]>;
 
-  private minimized = false;
   private sessionState: SelectionSessionState = initialSelectionSessionState();
   private tags: PanelTag[] = [];
   private toastMessage: string | null = null;
   private copyTimer: number | null = null;
   private dragBound = false;
+  private userHasManualCopiedOnce = false;
 
   constructor(callbacks: EditorPanelCallbacks, options?: EditorPanelOptions) {
     this.callbacks = callbacks;
@@ -38,6 +37,9 @@ export class EditorPanel {
 
     this.root = document.createElement("div");
     this.root.className = `${NS}-root ${NS}-chat`;
+    if (this.layout === "floating") {
+      this.root.classList.add(`${NS}-minimized`);
+    }
     if (this.layout === "sandbox") {
       this.root.classList.add(`${NS}-chat--sandbox`);
     }
@@ -54,10 +56,7 @@ export class EditorPanel {
 
     this.reactRoot = createRoot(this.mountPoint);
     this.commit();
-  }
-
-  get isMinimized(): boolean {
-    return this.minimized;
+    this.applyFloatingDockLayout();
   }
 
   get element(): HTMLDivElement {
@@ -75,8 +74,11 @@ export class EditorPanel {
     this.commit();
   }
 
-  /** D-15：曾用于「提示」Tab 内复制辅句门闩；当前面板不展示引导，保留空实现供宿主调用。 */
-  setUserHasManualCopiedOnce(_value: boolean): void {}
+  setUserHasManualCopiedOnce(value: boolean): void {
+    if (this.userHasManualCopiedOnce === value) return;
+    this.userHasManualCopiedOnce = value;
+    this.commit();
+  }
 
   renderTags(tags: PanelTag[]): void {
     this.tags = tags;
@@ -94,64 +96,40 @@ export class EditorPanel {
     }, 2000);
   }
 
-  private toggleMinimize(): void {
-    this.minimized = !this.minimized;
-    this.syncOuterChrome();
-    this.commit();
-    this.applyMinimizedDockLayout();
-    this.callbacks.onMinimizeChange(this.minimized);
-  }
-
-  /** 浮动布局：最小化时整壳磁吸到视口右侧竖条；展开恢复右下默认位 */
-  private applyMinimizedDockLayout(): void {
+  /** 浮动布局：壳体始终贴右磁吸竖条（壳体 PRD L-04）；仅可拖动手柄上下平移 */
+  private applyFloatingDockLayout(): void {
     if (this.layout !== "floating") return;
-    const dockRight = () => {
-      this.root.style.setProperty("position", "fixed");
-      this.root.style.setProperty("right", "6px");
-      this.root.style.setProperty("left", "auto");
-      this.root.style.setProperty("bottom", "auto");
-      this.root.style.removeProperty("transform");
-      this.root.style.setProperty("width", "auto");
-    };
-    if (this.minimized) {
-      dockRight();
+    this.root.style.setProperty("position", "fixed");
+    this.root.style.setProperty("right", "6px");
+    this.root.style.setProperty("left", "auto");
+    this.root.style.setProperty("bottom", "auto");
+    this.root.style.removeProperty("transform");
+    this.root.style.setProperty("width", "auto");
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const h = this.root.getBoundingClientRect().height || 100;
-          const y = Math.round((window.innerHeight - h) / 2);
-          const clamped = Math.max(40, Math.min(y, window.innerHeight - h - 40));
-          this.root.style.setProperty("top", `${clamped}px`);
-        });
+        const h = this.root.getBoundingClientRect().height || 100;
+        const y = Math.round((window.innerHeight - h) / 2);
+        const clamped = Math.max(40, Math.min(y, window.innerHeight - h - 40));
+        this.root.style.setProperty("top", `${clamped}px`);
       });
-    } else {
-      this.root.style.removeProperty("transform");
-      this.root.style.removeProperty("top");
-      this.root.style.setProperty("position", "fixed");
-      this.root.style.setProperty("right", "20px");
-      this.root.style.setProperty("bottom", "20px");
-      this.root.style.setProperty("left", "auto");
-      this.root.style.removeProperty("width");
-    }
-  }
-
-  private syncOuterChrome(): void {
-    this.root.classList.toggle(`${NS}-minimized`, this.minimized);
+    });
   }
 
   private commit(): void {
-    this.syncOuterChrome();
     this.reactRoot.render(
       <SelectionSessionPanel
         session={this.sessionState}
         tags={this.tags}
-        minimized={this.minimized}
         layout={this.layout}
         toastMessage={this.toastMessage}
-        onMinimize={() => this.toggleMinimize()}
+        userHasManualCopiedOnce={this.userHasManualCopiedOnce}
         onClose={() => this.callbacks.onClose()}
         onTagFocusRequest={(id) => this.callbacks.onTagFocusRequest(id)}
       />,
     );
+    if (this.layout === "floating") {
+      requestAnimationFrame(() => this.applyFloatingDockLayout());
+    }
     requestAnimationFrame(() => this.ensureDragBinding());
   }
 
@@ -181,7 +159,7 @@ export class EditorPanel {
       startTop = rect.top;
 
       const move = (moveEvent: MouseEvent) => {
-        if (this.layout === "floating" && this.minimized) {
+        if (this.layout === "floating") {
           panel.style.top = `${startTop + moveEvent.clientY - startY}px`;
           return;
         }
@@ -192,7 +170,7 @@ export class EditorPanel {
         panel.style.removeProperty("transform");
       };
       const up = () => {
-        if (this.layout === "floating" && this.minimized) {
+        if (this.layout === "floating") {
           panel.style.setProperty("right", "6px");
           panel.style.setProperty("left", "auto");
         }

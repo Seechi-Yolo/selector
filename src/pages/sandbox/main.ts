@@ -76,6 +76,7 @@ function main(): void {
     { href: "#sample-lists", label: "列表与链接" },
     { href: "#sample-form", label: "表单与按钮" },
     { href: "#sample-rich", label: "图文与代码" },
+    { href: "#sample-design-system", label: "设计系统速览" },
   ];
   navItems.forEach((item, i) => {
     const a = document.createElement("a");
@@ -97,7 +98,7 @@ function main(): void {
   const lead = document.createElement("p");
   lead.className = "sandbox-page-lead";
   lead.textContent =
-    "以下为不同样式的页面片段。请使用与在普通网页中相同的方式：点击扩展图标或快捷键打开 Selector，在右下角使用主面板，对本页元素进行选取、批注与复制。";
+    "以下为不同样式的页面片段。请使用与在普通网页中相同的方式：点击扩展图标或快捷键打开 Selector，在页面右侧使用贴边条与（有选取时）左侧已选列表，对本页元素进行选取、批注与复制。完整「默认设计系统」与可复制的提示词片段请在本扩展菜单打开的顶栏中切换到「设计系统」标签。";
   flow.appendChild(lead);
 
   const secEditorPanel = createSandboxSection({ id: "sample-editor-panel", title: "主面板" });
@@ -105,7 +106,7 @@ function main(): void {
   panelIntro.className = "sandbox-prose sandbox-prose-muted";
   panelIntro.style.marginBottom = "14px";
   panelIntro.textContent =
-    "以下仅为「主面板外观」静态展示：注入 EditorChromeTheme（assets/editor.css）与静态壳 DOM（shared/editor-chrome），无 EditorPanel 选取/复制等逻辑。工具栏打开 Selector 后挂载的是另一对象（可交互 EditorPanel），二者样式同源、职责分离。";
+    "以下仅为历史「主面板壳」静态展示：注入 EditorChromeTheme（assets/editor.css）与静态壳 DOM（shared/editor-chrome），无真实选取会话逻辑。当前版本在真实页面上为贴边条 + 悬浮已选列表，详见使用教程。";
   const panelMount = document.createElement("div");
   panelMount.className = `sandbox-editor-panel-host ${EMBEDDED_EDITOR_HOST_CLASS}`;
   secEditorPanel.body.append(panelIntro, panelMount);
@@ -185,6 +186,22 @@ function greet(name) {
 }</code></pre>
   `;
   flow.appendChild(secRich.root);
+
+  const secDs = createSandboxSection({ id: "sample-design-system", title: "设计系统速览" });
+  secDs.body.innerHTML = `
+    <p class="sandbox-prose">与顶栏「设计系统」标签中默认页同一套 Volt 启发式令牌：暗底 + 翠绿强调 + 暖灰描边。下方为缩略色块与按钮，便于练习点选；可复制提示词仍以顶栏专页为准。</p>
+    <div class="sandbox-ds-swatches" aria-hidden="true">
+      <span class="sandbox-ds-chip" style="background:#050507;border:1px solid #3d3a39">Abyss</span>
+      <span class="sandbox-ds-chip" style="background:#101010;border:1px solid #3d3a39">Carbon</span>
+      <span class="sandbox-ds-chip" style="background:#06261c;color:#2fd6a1;border:1px solid #00d992">Signal</span>
+    </div>
+    <div class="sandbox-ds-btns">
+      <button type="button" class="sandbox-ds-ghost">Ghost</button>
+      <button type="button" class="sandbox-ds-primary">Primary</button>
+    </div>
+    <p class="sandbox-prose sandbox-prose-muted">打开路径：扩展图标菜单 → 教程与沙箱 → 顶栏「设计系统」。</p>
+  `;
+  flow.appendChild(secDs.root);
 
   grid.append(rail, flow);
   shell.appendChild(grid);

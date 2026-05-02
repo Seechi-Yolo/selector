@@ -14,6 +14,8 @@
 
 远期方向为用户手工构建交互流图并生成提示词，不通过自动录制网站真实操作链路实现。
 
+> **注**：扩展顶栏 **「设计系统」** 页已实现片段复制与教程入口，对应 [用户故事四](./product-requirements-documentation/user-stories-single-multi-and-layout-move.md) **M1**（将片段粘贴进「修改说明」后再「复制提示词」）。选取会话内 Slash 式 **S-xx**（会话内一键样式等）未纳入当前里程碑收口，见该文档「实现对照」与 [selection-session-slash-and-multi-step.md](./product-requirements-documentation/selection-session-slash-and-multi-step.md)。
+
 以下与上表编号一一对应：**交付内容**与**验收标准**用于里程碑收口对照；新增需求归入对应里程碑或标为待归档。
 
 ### 里程碑一：重构与浏览器扩展

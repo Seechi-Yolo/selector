@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CONSECUTIVE_EXIT_WINDOW_MS } from "./session-constants";
 import { createSessionReduceSeed, reduceSelectionSession } from "./session-reduce";
 
-describe("Selection session reducer (appendix A, D-10–D-13, D-11)", () => {
+describe("Selection session reducer (appendix A, I-10–I-13, I-11)", () => {
   it("Given 空会话 When immediate_select 一项 Then 默认 N（不自动开说明）且 wholeSetFlow idle", () => {
     let { state, clipboard } = createSessionReduceSeed();
     const out = reduceSelectionSession(state, clipboard, {

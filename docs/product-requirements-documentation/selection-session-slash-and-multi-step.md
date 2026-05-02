@@ -1,6 +1,6 @@
 # PRD：选取会话 — Slash、样式/动作与多步参考（拟议）
 
-**状态**：拟议（支撑用户故事三、四及后续里程碑；**不阻塞**里程碑一壳体 + 交互主路径）。事实口径仍以 `README.md` 为准。
+**状态**：拟议（**选取会话内**尚未实现；顶栏 **「设计系统」** 页已承担故事四 **M1** 的手动「样式片段 → 粘贴说明」路径，见 [`user-stories-single-multi-and-layout-move.md`](./user-stories-single-multi-and-layout-move.md)「实现对照」）。**不阻塞**里程碑一壳体 + 交互主路径。事实口径仍以 `README.md` 为准。
 
 **依赖**：[`selection-session-panel-shell-layout.md`](./selection-session-panel-shell-layout.md)、[`selection-session-interaction-and-state.md`](./selection-session-interaction-and-state.md)。**故事**：[`user-stories-single-multi-and-layout-move.md`](./user-stories-single-multi-and-layout-move.md) 故事三、四。
 
@@ -49,4 +49,4 @@
 
 ## 5. 与路线图
 
-默认归属**里程碑二及以后**；落地前须更新 `docs/roadmap.md` 与教程 §3 步骤。
+默认归属**里程碑二及以后**（与选取会话同一里程碑包亦可）；落地前须更新 `docs/roadmap.md`、用户故事「实现对照」与教程 §3 步骤。

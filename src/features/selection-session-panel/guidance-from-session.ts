@@ -30,8 +30,9 @@ function lineClip(userHasManualCopiedOnce: boolean): SessionGuidanceSecondary | 
 }
 
 /**
- * PRD D-09 / **D-24**：主句极短；辅句极少。
+ * PRD I-09 / **I-24**：主句极短；辅句极少。
  * 单选未开说明时仅提示方向键与 Esc；多选未开说明时主句仍提示 Enter 开说明。
+ * 有选取且未开说明时增加一条极短的「样式→设计系统」入口（故事四 M1 发现性），单选与多选共用同一句。
  */
 export function guidanceFromSession(input: {
   session: SelectionSessionState;
@@ -77,6 +78,7 @@ export function guidanceFromSession(input: {
     if (selectionCount >= 2) {
       secondaries.push(sec("esc", K("ESC"), T(" 取消选中")));
     }
+    secondaries.push(sec("design-system", T("样式：扩展菜单→设计系统")));
     const clip = lineClip(userHasManualCopiedOnce);
     if (clip) secondaries.push(clip);
     const singleNoInstruction = selectionCount === 1;

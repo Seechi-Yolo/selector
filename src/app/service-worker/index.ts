@@ -65,7 +65,7 @@ function registerActionContextMenu(): void {
     chrome.contextMenus.create(
       {
         id: MENU_HELP_HUB_ID,
-        title: "使用教程与沙箱",
+        title: "教程、沙箱与设计系统",
         contexts: ["action"],
       },
       () => {

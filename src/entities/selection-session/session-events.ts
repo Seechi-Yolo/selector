@@ -13,7 +13,7 @@ export type SessionEvent =
   /** 多选包络角标：打开「对当前选取的说明」层（whole_required / whole_done） */
   | { type: "open_whole_set_instruction_badge"; atMs: number }
   | { type: "esc"; atMs: number }
-  /** 附录 A：O → N 的非 Esc 路径（完成 / 关闭 / 失焦关壳等）；不触发 D-11 Esc 闩 */
+  /** 附录 A：O → N 的非 Esc 路径（完成 / 关闭 / 失焦关壳等）；不触发 I-11 Esc 闩 */
   | { type: "instruction_surface_close"; atMs: number }
   | { type: "finalize_whole_set_instruction" }
   | { type: "draft_set_text"; scope: "whole_set" | "per_item"; elementId?: string; text: string; atMs: number }

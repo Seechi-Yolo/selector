@@ -139,7 +139,6 @@ export class SelectorContentApp {
     this.panel = new EditorPanel({
       onCopy: () => void this.copySelectionPrompt(),
       onClose: () => this.destroy(),
-      onMinimizeChange: () => this.overlays.showHover(null, (id) => this.controller.hasSelection(id)),
       onTagFocusRequest: (tagId) => {
         if (this.session.selectionCount <= 1) return;
         if (this.session.focusElementId === tagId) return;
@@ -426,7 +425,7 @@ export class SelectorContentApp {
   }
 
   private handleMouseMove(event: MouseEvent): void {
-    if (this.panel?.isMinimized || this.isPaused()) return;
+    if (this.isPaused()) return;
 
     if (this.dragState) {
       const dx = event.clientX - this.dragState.startX;
@@ -480,7 +479,7 @@ export class SelectorContentApp {
       return;
     }
     if (isExtensionUiSurface(event.target)) return;
-    if (this.panel?.isMinimized || this.isPaused()) return;
+    if (this.isPaused()) return;
     if (event.button !== 0) return;
     if (event.shiftKey) event.preventDefault();
 
@@ -535,7 +534,7 @@ export class SelectorContentApp {
       event.stopPropagation();
       return;
     }
-    if (this.panel?.isMinimized || this.isPaused()) return;
+    if (this.isPaused()) return;
     if (this.wasJustDragging) return;
 
     event.preventDefault();

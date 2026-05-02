@@ -1,59 +1,62 @@
-/* 浮动选取面板：默认 宽:高 = 3:4；可拖右下角改宽高（见 .sel-session-resize-grip） */
+/* 选取会话壳体：贴边条（L-01）+ 条件左侧悬浮已选（L-02） */
+
 .sel-volt.sel-session-panel {
   box-sizing: border-box;
   position: relative;
-  width: min(130px, calc((100vw - 24px) / 2), calc(92vh * 3 / 8));
-  aspect-ratio: 3 / 4;
-  height: auto;
-  min-height: 0;
+  font-family: var(--sel-font-ui);
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--sel-snow);
+  user-select: none;
+}
+
+.sel-session-chrome {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  max-width: min(100vw - 16px, 520px);
+}
+
+.sel-session-chrome--sandbox {
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 100%;
+}
+
+/* 左侧悬浮已选列表（与贴边条松耦合） */
+.sel-session-floating-selected {
+  flex: 0 1 auto;
+  max-width: min(240px, calc(100vw - 120px));
+  max-height: min(52vh, 320px);
+  overflow: auto;
+  padding: 8px 10px;
+  border-radius: var(--sel-radius-card);
+  border: 1px solid var(--sel-border);
+  background: var(--sel-carbon);
+  box-shadow:
+    rgba(92, 88, 85, 0.18) 0 0 14px,
+    rgba(0, 0, 0, 0.45) 0 12px 36px;
+}
+
+.sel-session-strip {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: min(168px, calc(100vw - 32px));
   display: flex;
   flex-direction: column;
   background: var(--sel-carbon);
-  color: var(--sel-snow);
   border: 1px solid var(--sel-border);
   border-radius: var(--sel-radius-card);
   box-shadow:
     rgba(92, 88, 85, 0.18) 0 0 18px,
     rgba(0, 0, 0, 0.55) 0 18px 48px;
-  font-family: var(--sel-font-ui);
-  font-size: 11px;
-  line-height: 1.4;
   overflow: hidden;
 }
 
-.sel-session-resize-grip {
-  position: absolute;
-  right: 1px;
-  bottom: 1px;
-  z-index: 4;
-  width: 18px;
-  height: 18px;
-  cursor: nwse-resize;
-  touch-action: none;
-  border-radius: 0 0 var(--sel-radius-card) 0;
-  background: linear-gradient(
-    135deg,
-    transparent 0%,
-    transparent 45%,
-    rgba(255, 255, 255, 0.12) 45%,
-    rgba(255, 255, 255, 0.12) 50%,
-    transparent 50%,
-    transparent 55%,
-    rgba(255, 255, 255, 0.12) 55%,
-    rgba(255, 255, 255, 0.12) 60%,
-    transparent 60%
-  );
-}
-
-.sel-session-resize-grip:hover {
-  background: linear-gradient(
-    135deg,
-    transparent 0%,
-    transparent 40%,
-    rgba(0, 217, 146, 0.35) 40%,
-    rgba(0, 217, 146, 0.35) 65%,
-    transparent 65%
-  );
+.sel-session-panel--floating-strip .sel-session-strip {
+  border-radius: 10px;
 }
 
 .sel-session-drag {
@@ -93,13 +96,10 @@
 
 .sel-session-status {
   font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   color: var(--sel-parchment);
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .sel-session-actions {
@@ -108,7 +108,6 @@
   flex-shrink: 0;
 }
 
-/* D-25：头部 icon 小尺寸 */
 .sel-session-icon-btn {
   width: 22px;
   height: 22px;
@@ -128,24 +127,76 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
-.sel-session-body {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.sel-session-selected-stack {
+.sel-session-strip-body {
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
+  padding: 6px 8px 8px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
 
-.sel-session-selected {
-  padding: 6px 8px 8px;
-  flex: 0 0 auto;
+/* 操作引导（I-09 / I-24） */
+.sel-session-guidance {
+  margin: 0;
+  min-height: 0;
+}
+
+.sel-session-guidance-primary {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--sel-parchment);
+  line-height: 1.35;
+}
+
+.sel-session-guidance-primary--shiny {
+  color: var(--sel-mint);
+}
+
+.sel-session-guidance-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sel-session-guidance-list--prominent .sel-session-guidance-li {
+  font-size: 10px;
+}
+
+.sel-session-guidance-li {
+  margin: 0;
+  font-size: 9px;
+  color: var(--sel-slate);
+  line-height: 1.35;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 4px;
+}
+
+.sel-session-kbd {
+  font-family: var(--sel-font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--sel-snow);
+}
+
+.sel-session-guidance-text {
+  color: var(--sel-slate);
+}
+
+.sel-session-toast {
+  margin: 0;
+  font-size: 9px;
+  color: var(--sel-mint);
 }
 
 .sel-session-tag-row {
@@ -159,12 +210,6 @@
 
 .sel-session-tag-row--list-only {
   justify-content: flex-start;
-}
-
-.sel-session-empty-hint {
-  margin: 0;
-  font-size: 10px;
-  color: var(--sel-slate);
 }
 
 .sel-session-tag {
@@ -193,7 +238,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: min(220px, calc(100% - 8px));
+  max-width: min(200px, calc(100% - 8px));
 }
 
 .sel-session-tag--focus {
@@ -201,7 +246,6 @@
   box-shadow: 0 0 0 1px rgba(0, 217, 146, 0.12);
 }
 
-/* 多选：虚拟根「本页选取」+ 子列表 */
 .sel-session-tree {
   display: flex;
   flex-direction: column;
@@ -224,7 +268,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 2px 6px;
+  padding: 0 0 6px;
   margin-bottom: 2px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 10px;
@@ -263,56 +307,17 @@
   gap: 5px;
 }
 
-.sel-session-toast {
-  margin-top: 6px;
-  font-size: 9px;
-  color: var(--sel-mint);
-}
-
-.sel-session-minimized .sel-session-body {
-  display: none;
-}
-
-/* 最小化：整面板缩为右侧竖条（与外层 .ai-editor-minimized 磁吸配合） */
-.sel-session-panel.sel-session-minimized {
-  aspect-ratio: auto;
-  width: 36px;
-  min-width: 36px;
-  max-width: 36px;
-  height: auto;
-  min-height: 0;
-  max-height: none;
-  border-radius: 10px;
-}
-
-.sel-session-minimized .sel-session-drag {
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 8px 4px;
-  gap: 8px;
-  border-bottom: none;
-}
-
-.sel-session-minimized .sel-session-title {
-  flex-direction: column;
-  gap: 4px;
-}
-
-.sel-session-minimized .sel-session-status {
-  display: none;
-}
-
-.sel-session-minimized .sel-session-actions {
-  flex-direction: column;
-  gap: 4px;
+.sel-session-panel--sandbox .sel-session-strip {
+  width: 100%;
+  max-width: 100%;
 }
 
 .sel-session-panel--sandbox {
   width: 100%;
   max-width: 100%;
-  aspect-ratio: auto;
-  height: auto;
-  min-height: min(160px, 28vh);
-  max-height: min(36vh, 320px);
+}
+
+.sel-session-panel--sandbox .sel-session-floating-selected {
+  max-width: 100%;
+  max-height: min(28vh, 240px);
 }

@@ -21,9 +21,9 @@ export type WholeSetGatePresentation = "not_applicable" | "blocked_until_done" |
 
 export interface SelectionPanelPresentation {
   layout: {
-    /** PRD D-03：上已选内容、下操作引导 */
+    /** 壳体 PRD L-02/L-03：贴边条内为操作引导；已选为条靠页一侧外的悬浮列表（呈现层仍可用 stacking 表达纵向信息顺序） */
     stacking: "selected_content_then_operational_guidance";
-    /** PRD D-16 仅表达比例意图（相对旧「2× / 1.5×」基准），像素由宿主/CSS 实现 */
+    /** 壳体 PRD L-05：窄条体量意图；像素由宿主/CSS 实现 */
     sizeIntent: { heightScale: number; widthScale: number };
   };
   picking: Picking;
@@ -31,13 +31,13 @@ export interface SelectionPanelPresentation {
   instructionSurface: InstructionSurfacePresentation;
   wholeSetGate: WholeSetGatePresentation;
   guidance: {
-    /** 供 i18n/文案层选择主引导场景（D-09 主句来源） */
+    /** 供 i18n/文案层选择主引导场景（PRD I-09 主句来源） */
     primaryScene: GuidancePrimaryScene;
-    /** PRD D-15 */
+    /** PRD I-15 */
     showClipboardAuxiliaryHints: boolean;
   };
   chrome: {
-    /** PRD D-07 */
+    /** PRD I-07 */
     persistentCopyPromptButton: false;
   };
 }

@@ -2,12 +2,15 @@ import helpHubCss from "./help-hub.css?raw";
 
 const TUTORIAL_PATH = "src/pages/tutorial/tutorial.html";
 const SANDBOX_PATH = "src/pages/sandbox/sandbox.html";
+const DESIGN_SYSTEM_PATH = "src/pages/design-system/design-system.html";
 
 function injectDocumentStyles(css: string): void {
   const el = document.createElement("style");
   el.textContent = css;
   document.head.appendChild(el);
 }
+
+type HelpHubTab = "tutorial" | "sandbox" | "design";
 
 function main(): void {
   injectDocumentStyles(helpHubCss);
@@ -43,7 +46,7 @@ function main(): void {
   title.textContent = "Selector";
   const sub = document.createElement("span");
   sub.className = "help-hub-brand-sub";
-  sub.textContent = "使用教程与界面沙箱";
+  sub.textContent = "使用教程、沙箱与设计系统";
   brand.append(mark, title, sub);
   barStart.appendChild(brand);
 
@@ -53,7 +56,7 @@ function main(): void {
   const tablist = document.createElement("div");
   tablist.className = "help-hub-tabs";
   tablist.setAttribute("role", "tablist");
-  tablist.setAttribute("aria-label", "教程与沙箱");
+  tablist.setAttribute("aria-label", "教程、沙箱与设计系统");
 
   const tabTutorial = document.createElement("button");
   tabTutorial.type = "button";
@@ -73,7 +76,16 @@ function main(): void {
   tabSandbox.setAttribute("aria-selected", "false");
   tabSandbox.textContent = "沙箱";
 
-  tablist.append(tabTutorial, tabSandbox);
+  const tabDesign = document.createElement("button");
+  tabDesign.type = "button";
+  tabDesign.className = "help-hub-tab";
+  tabDesign.setAttribute("role", "tab");
+  tabDesign.id = "help-hub-tab-design";
+  tabDesign.setAttribute("aria-controls", "help-hub-panel-design");
+  tabDesign.setAttribute("aria-selected", "false");
+  tabDesign.textContent = "设计系统";
+
+  tablist.append(tabTutorial, tabSandbox, tabDesign);
   barCenter.appendChild(tablist);
 
   const barEnd = document.createElement("div");
@@ -102,27 +114,44 @@ function main(): void {
   iframeSandbox.setAttribute("role", "tabpanel");
   iframeSandbox.setAttribute("aria-labelledby", "help-hub-tab-sandbox");
 
-  panels.append(iframeTutorial, iframeSandbox);
+  const iframeDesign = document.createElement("iframe");
+  iframeDesign.className = "help-hub-frame";
+  iframeDesign.id = "help-hub-panel-design";
+  iframeDesign.title = "设计系统";
+  iframeDesign.setAttribute("role", "tabpanel");
+  iframeDesign.setAttribute("aria-labelledby", "help-hub-tab-design");
+
+  panels.append(iframeTutorial, iframeSandbox, iframeDesign);
   root.appendChild(panels);
   document.body.appendChild(root);
 
-  const selectTab = (which: "tutorial" | "sandbox"): void => {
+  const selectTab = (which: HelpHubTab): void => {
     const isTutorial = which === "tutorial";
+    const isSandbox = which === "sandbox";
+    const isDesign = which === "design";
     tabTutorial.setAttribute("aria-selected", String(isTutorial));
-    tabSandbox.setAttribute("aria-selected", String(!isTutorial));
+    tabSandbox.setAttribute("aria-selected", String(isSandbox));
+    tabDesign.setAttribute("aria-selected", String(isDesign));
     iframeTutorial.classList.toggle("help-hub-frame-visible", isTutorial);
-    iframeSandbox.classList.toggle("help-hub-frame-visible", !isTutorial);
-    if (!isTutorial && !iframeSandbox.src) {
+    iframeSandbox.classList.toggle("help-hub-frame-visible", isSandbox);
+    iframeDesign.classList.toggle("help-hub-frame-visible", isDesign);
+    if (isSandbox && !iframeSandbox.src) {
       iframeSandbox.src = chrome.runtime.getURL(SANDBOX_PATH);
+    }
+    if (isDesign && !iframeDesign.src) {
+      iframeDesign.src = chrome.runtime.getURL(DESIGN_SYSTEM_PATH);
     }
   };
 
   tabTutorial.addEventListener("click", () => selectTab("tutorial"));
   tabSandbox.addEventListener("click", () => selectTab("sandbox"));
+  tabDesign.addEventListener("click", () => selectTab("design"));
 
   const hash = window.location.hash.replace(/^#/, "").toLowerCase();
   if (hash === "sandbox") {
     selectTab("sandbox");
+  } else if (hash === "design" || hash === "design-system") {
+    selectTab("design");
   }
 }
 

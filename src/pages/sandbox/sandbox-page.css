@@ -265,6 +265,56 @@
   font-family: inherit;
 }
 
+.sandbox-ds-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 14px;
+}
+
+.sandbox-ds-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--lab-snow);
+}
+
+.sandbox-ds-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.sandbox-ds-ghost,
+.sandbox-ds-primary {
+  padding: 9px 14px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: default;
+  font-family: inherit;
+}
+
+.sandbox-ds-ghost {
+  color: #fff;
+  background: transparent;
+  border: 1px solid var(--lab-border);
+}
+
+.sandbox-ds-primary {
+  color: var(--lab-mint);
+  background: var(--lab-carbon);
+  border: 1px solid transparent;
+  box-shadow: 0 0 0 1px rgba(47, 214, 161, 0.35);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sandbox-btn {
     transition: none;

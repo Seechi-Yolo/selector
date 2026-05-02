@@ -31,7 +31,7 @@ function mapOverlaySemantic(session: SelectionSessionState): SelectionOverlaySem
 /**
  * 将领域会话状态投影为「只读呈现模型」，供面板与页上叠加渲染。
  *
- * @param userHasManualCopiedOnce — 来自宿主（键盘/菜单复制成功），参与 D-15，**不属于**领域聚合根。
+ * @param userHasManualCopiedOnce — 来自宿主（键盘/菜单复制成功），参与 I-15，**不属于**领域聚合根。
  */
 export function mapSelectionSessionToPresentation(input: {
   session: SelectionSessionState;
