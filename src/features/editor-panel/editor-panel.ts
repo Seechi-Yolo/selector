@@ -1,6 +1,6 @@
 import type { ElementId } from "../../entities/element-selection";
-import { createEditorPanelShellElement } from "../../entities/editor-chrome";
-import { NS } from "../dom/constants";
+import { createEditorPanelShellElement, EDITOR_PANEL_ICON_MINIMIZE } from "../../shared/editor-chrome";
+import { NS } from "../../shared/dom/constants";
 
 export interface PanelTag {
   id: ElementId;
@@ -23,8 +23,6 @@ export interface EditorPanelOptions {
   layout?: "floating" | "sandbox";
 }
 
-const ICON_MINIMIZE =
-  '<svg width="10" height="2" viewBox="0 0 10 2" fill="none"><line x1="0" y1="1" x2="10" y2="1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
 const ICON_EXPAND =
   '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 7L5 3L9 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
@@ -135,7 +133,7 @@ export class EditorPanel {
     } else {
       body.style.display = "";
       this.root.classList.remove(`${NS}-minimized`);
-      button.innerHTML = ICON_MINIMIZE;
+      button.innerHTML = EDITOR_PANEL_ICON_MINIMIZE;
       button.title = "Minimize";
     }
 

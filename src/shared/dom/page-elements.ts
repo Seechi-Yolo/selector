@@ -1,9 +1,12 @@
-import type { ElementId } from "../../entities/element-selection";
-import { truncate, type PromptElementContext } from "../../entities/prompt-composition";
 import { AI_ID, EMBEDDED_EDITOR_HOST_CLASS, NS } from "./constants";
-import { getReactDebug } from "./react-debug";
 
 let generatedIdCounter = 0;
+
+function truncatePlainText(value: string | null | undefined, max: number): string {
+  if (!value) return "";
+  const normalized = value.replace(/\s+/g, " ").trim();
+  return normalized.length > max ? `${normalized.slice(0, max)}...` : normalized;
+}
 
 /** 在任意 `.${NS}-root` 子树内（浮动主面板、批注按钮等） */
 export function isEditorElement(el: EventTarget | null): boolean {
@@ -28,7 +31,7 @@ export function assignElementIds(root: Element): void {
   }
 }
 
-export function elementId(el: Element): ElementId {
+export function elementId(el: Element): string {
   const existing = el.getAttribute(AI_ID);
   if (existing) return existing;
 
@@ -37,13 +40,13 @@ export function elementId(el: Element): ElementId {
   return id;
 }
 
-function createElementId(): ElementId {
+function createElementId(): string {
   if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
   generatedIdCounter += 1;
   return `selector-${Date.now().toString(36)}-${generatedIdCounter.toString(36)}`;
 }
 
-export function byElementId(id: ElementId): Element | null {
+export function byElementId(id: string): Element | null {
   return document.querySelector(`[${AI_ID}="${CSS.escape(id)}"]`);
 }
 
@@ -100,7 +103,7 @@ export function elementLabel(el: Element): string {
   if (el.classList.length) return `.${el.classList[0]}`;
 
   const tag = el.tagName.toLowerCase();
-  const text = truncate(el.textContent, 20);
+  const text = truncatePlainText(el.textContent, 20);
   if (text) return `${tag} "${text}"`;
 
   return `<${tag}>`;
@@ -130,26 +133,4 @@ export function buildSelector(el: Element): string {
   }
 
   return parts.join(" > ");
-}
-
-export function buildElementContext(id: ElementId, index: number): PromptElementContext | null {
-  const el = byElementId(id);
-  if (!el) return null;
-
-  const dataAttrs: Record<string, string> = {};
-  for (const attr of el.attributes) {
-    if (attr.name.startsWith("data-") && attr.name !== AI_ID) dataAttrs[attr.name] = attr.value;
-  }
-
-  return {
-    id,
-    index,
-    label: elementLabel(el),
-    selector: buildSelector(el),
-    tag: el.tagName.toLowerCase(),
-    text: truncate(el.textContent, 80),
-    outerHTML: el.outerHTML.slice(0, 200),
-    dataAttrs,
-    ...getReactDebug(el),
-  };
 }

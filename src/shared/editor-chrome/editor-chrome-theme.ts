@@ -1,5 +1,5 @@
 import editorChromeCss from "../../../assets/editor.css?raw";
-import { NS } from "../../shared/dom/constants";
+import { NS } from "../dom/constants";
 
 const STYLE_ELEMENT_ID = "selector-editor-style";
 

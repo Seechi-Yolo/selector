@@ -30,6 +30,19 @@ Only create layers that the change actually needs. For small features, keep the 
 - Feature code may coordinate entities, UI, and adapters, but should not hide domain rules inside components.
 - Cross-slice imports should go through public entry points, usually `index.ts`.
 
+### Concrete rules for this repo
+
+| From \\ To | `entities` | `shared` | `features` | `app` / `pages` |
+|------------|:------------:|:--------:|:------------:|:---------------:|
+| **`entities`** | internal only | **avoid** — prefer keeping domain free of infra imports; if a type is only a string alias, keep it in `entities` | **no** | **no** |
+| **`shared`** | **no** — do not import domain types or domain functions; use plain `string` at boundaries if needed | internal only | **no** | **no** |
+| **`features`** | yes | yes | internal only | **no** |
+| **`app` / `pages`** | yes | yes | yes | internal |
+
+- **`shared/editor-chrome`**: global theme injection, panel shell DOM, and CSS class contract — presentation/infrastructure, **not** domain. Lives under `shared` so it can use `document` and raw CSS without polluting `entities`.
+- **DOM read model → prompt row**: assembling `PromptElementContext` from `document` belongs in a **feature** (e.g. `features/copy-prompt/build-element-context.ts`), not in `shared/dom`, so `shared` does not depend on `entities/prompt-composition`.
+- **Interactive panel** (`EditorPanel`): lives in `features/editor-panel` when it wires shell DOM to selection/`ElementId` callbacks — not in `shared/ui`.
+
 ## Local Data Boundary
 
 Treat Chrome/local browser storage as infrastructure, not the domain model.

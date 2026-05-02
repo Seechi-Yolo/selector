@@ -1,10 +1,11 @@
-import { NS } from "../../shared/dom/constants";
+import { NS } from "../dom/constants";
 
 export type EditorPanelShellLayout = "floating" | "sandbox";
 
 export type EditorPanelShellMode = "shell" | "interactive";
 
-const ICON_MINIMIZE =
+/** 与可交互 `EditorPanel` 共用，保证壳与折叠按钮 SVG 一致 */
+export const EDITOR_PANEL_ICON_MINIMIZE =
   '<svg width="10" height="2" viewBox="0 0 10 2" fill="none"><line x1="0" y1="1" x2="10" y2="1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
 
 function shellInnerHtml(): string {
@@ -15,7 +16,7 @@ function shellInnerHtml(): string {
           <span class="${NS}-status-label">Selecting</span>
         </span>
         <div class="${NS}-panel-actions">
-          <button type="button" class="${NS}-panel-btn" data-action="minimize" title="Minimize">${ICON_MINIMIZE}</button>
+          <button type="button" class="${NS}-panel-btn" data-action="minimize" title="Minimize">${EDITOR_PANEL_ICON_MINIMIZE}</button>
           <button type="button" class="${NS}-panel-btn" data-action="close" title="Close">
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
               <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>

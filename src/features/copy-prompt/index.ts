@@ -1,6 +1,8 @@
 import { buildPromptText, type PromptElementContext } from "../../entities/prompt-composition";
 import type { ElementId } from "../../entities/element-selection";
 
+export { buildElementContext } from "./build-element-context";
+
 export interface PromptContextReader {
   read(id: ElementId, index: number): PromptElementContext | null;
 }

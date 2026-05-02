@@ -1,5 +1,6 @@
 import { saveAnnotation, clearSelectionAnnotation } from "../../features/annotate-selection";
-import { copyPrompt } from "../../features/copy-prompt";
+import { buildElementContext, copyPrompt } from "../../features/copy-prompt";
+import { EditorPanel } from "../../features/editor-panel";
 import { tryMountTutorialIntro, type EditorOnboarding } from "../../features/editor-onboarding";
 import { SelectionController } from "../../features/select-elements";
 import { BrowserClipboard } from "../../shared/clipboard";
@@ -7,7 +8,6 @@ import type { ElementId } from "../../entities/element-selection";
 import { rectsIntersect } from "../../shared/dom/geometry";
 import {
   assignElementIds,
-  buildElementContext,
   byElementId,
   elementId,
   elementLabel,
@@ -18,8 +18,8 @@ import {
   meaningfulElements,
   resolveTarget,
 } from "../../shared/dom/page-elements";
-import { EditorChromeTheme } from "../../entities/editor-chrome";
-import { AnnotationPopover, EditorPanel, SelectionOverlays } from "../../shared/ui";
+import { EditorChromeTheme } from "../../shared/editor-chrome";
+import { AnnotationPopover, SelectionOverlays } from "../../shared/ui";
 
 interface ListenerRecord {
   target: EventTarget;

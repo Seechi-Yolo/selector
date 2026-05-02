@@ -1,4 +1,3 @@
-import type { ElementId } from "../../entities/element-selection";
 import { byElementId, elementLabel } from "../dom/page-elements";
 import { NS } from "../dom/constants";
 
@@ -11,9 +10,9 @@ interface SelectionOverlay {
 
 export class SelectionOverlays {
   private hoverBox: HTMLDivElement | null = null;
-  private overlays = new Map<ElementId, SelectionOverlay>();
+  private overlays = new Map<string, SelectionOverlay>();
 
-  constructor(private readonly onAnnotate: (id: ElementId, button: HTMLButtonElement) => void) {}
+  constructor(private readonly onAnnotate: (id: string, button: HTMLButtonElement) => void) {}
 
   createHoverBox(): void {
     this.hoverBox = document.createElement("div");
@@ -21,7 +20,7 @@ export class SelectionOverlays {
     document.body.appendChild(this.hoverBox);
   }
 
-  showHover(el: Element | null, isSelected: (id: ElementId) => boolean): void {
+  showHover(el: Element | null, isSelected: (id: string) => boolean): void {
     if (!this.hoverBox) return;
     if (!el) {
       this.hoverBox.style.opacity = "0";
@@ -42,7 +41,7 @@ export class SelectionOverlays {
     this.hoverBox.style.opacity = "1";
   }
 
-  render(selectedIds: ElementId[], hasAnnotation: (id: ElementId) => boolean): void {
+  render(selectedIds: string[], hasAnnotation: (id: string) => boolean): void {
     for (const id of [...this.overlays.keys()]) {
       if (!selectedIds.includes(id)) this.destroyOverlay(id);
     }
@@ -53,7 +52,7 @@ export class SelectionOverlays {
     }
   }
 
-  positionAll(selectedIds: ElementId[], hasAnnotation: (id: ElementId) => boolean): void {
+  positionAll(selectedIds: string[], hasAnnotation: (id: string) => boolean): void {
     for (const id of selectedIds) this.positionOverlay(id, hasAnnotation(id));
   }
 
@@ -63,7 +62,7 @@ export class SelectionOverlays {
     this.hoverBox = null;
   }
 
-  private createOverlay(id: ElementId): void {
+  private createOverlay(id: string): void {
     const el = byElementId(id);
     if (!el) return;
 
@@ -99,7 +98,7 @@ export class SelectionOverlays {
     this.overlays.set(id, { box, corners, label, annotateButton });
   }
 
-  private positionOverlay(id: ElementId, hasAnnotation: boolean): void {
+  private positionOverlay(id: string, hasAnnotation: boolean): void {
     const el = byElementId(id);
     const overlay = this.overlays.get(id);
     if (!el || !overlay) return;
@@ -132,7 +131,7 @@ export class SelectionOverlays {
     overlay.annotateButton.classList.toggle(`${NS}-has-note`, hasAnnotation);
   }
 
-  private destroyOverlay(id: ElementId): void {
+  private destroyOverlay(id: string): void {
     const overlay = this.overlays.get(id);
     if (!overlay) return;
 

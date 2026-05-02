@@ -1,11 +1,10 @@
-import type { ElementId } from "../../entities/element-selection";
 import { NS } from "../dom/constants";
 
 export class AnnotationPopover {
   private root: HTMLDivElement | null = null;
 
   show(params: {
-    id: ElementId;
+    id: string;
     anchor: HTMLElement;
     value: string;
     onSave(value: string): void;

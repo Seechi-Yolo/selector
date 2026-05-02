@@ -5,7 +5,7 @@ import {
   createEditorPanelShellElement,
   EditorChromeTheme,
   paintShellSampleTags,
-} from "../../entities/editor-chrome";
+} from "../../shared/editor-chrome";
 import { EMBEDDED_EDITOR_HOST_CLASS } from "../../shared/dom/constants";
 
 function injectStyles(): void {
@@ -105,7 +105,7 @@ function main(): void {
   panelIntro.className = "sandbox-prose sandbox-prose-muted";
   panelIntro.style.marginBottom = "14px";
   panelIntro.textContent =
-    "以下为「主面板外观」领域：仅注入 EditorChromeTheme（assets/editor.css）与静态壳 DOM，无 EditorPanel 选取/复制等逻辑。工具栏打开 Selector 后挂载的是另一对象（可交互 EditorPanel），二者样式同源、职责分离。";
+    "以下仅为「主面板外观」静态展示：注入 EditorChromeTheme（assets/editor.css）与静态壳 DOM（shared/editor-chrome），无 EditorPanel 选取/复制等逻辑。工具栏打开 Selector 后挂载的是另一对象（可交互 EditorPanel），二者样式同源、职责分离。";
   const panelMount = document.createElement("div");
   panelMount.className = `sandbox-editor-panel-host ${EMBEDDED_EDITOR_HOST_CLASS}`;
   secEditorPanel.body.append(panelIntro, panelMount);
