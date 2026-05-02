@@ -17,6 +17,6 @@ chrome.commands.onCommand.addListener((command) => {
   if (command !== "open-selector") return;
 
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-    void openSelector(tab?.id);
+    void openSelector(tab && tab.id);
   });
 });

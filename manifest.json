@@ -7,8 +7,7 @@
     "default_title": "Open Selector"
   },
   "background": {
-    "service_worker": "assets/service-worker.js",
-    "type": "module"
+    "service_worker": "assets/service-worker.js"
   },
   "permissions": ["activeTab", "scripting"],
   "commands": {

@@ -17,6 +17,7 @@ export default defineConfig({
   plugins: [copyManifest()],
   build: {
     emptyOutDir: true,
+    minify: false,
     rollupOptions: {
       input: {
         content: resolve(__dirname, "src/app/content/index.ts"),
