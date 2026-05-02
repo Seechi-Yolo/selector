@@ -253,6 +253,15 @@
   background: #e0e0e0;
 }
 
+/* D-19：暂停且已选时整页弱遮罩（pointer-events:none，点选仍由脚本拦截） */
+.ai-editor-pause-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483638;
+  pointer-events: none;
+  background: rgba(15, 15, 18, 0.06);
+}
+
 /* ── Marquee D-01：浅绿闭合描边、无填充 ───────────────────── */
 .ai-editor-marquee {
   position: fixed;

@@ -23,7 +23,7 @@ describe("Composed prompt ordering (D-14)", () => {
       selectionLevelInstruction: "统一改成暗色主题",
     });
     const idxPage = text.indexOf("Page:");
-    const idxOverall = text.indexOf("Selection-level instruction:");
+    const idxOverall = text.indexOf("对当前选取的说明:");
     const idxFirstEl = text.indexOf("1. .a");
     expect(idxPage).toBeGreaterThanOrEqual(0);
     expect(idxOverall).toBeGreaterThan(idxPage);

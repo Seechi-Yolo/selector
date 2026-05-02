@@ -39,19 +39,22 @@ The composed **复制提示词** includes page path, element metadata (tag, sele
 ```
 Page: /dashboard
 
+对当前选取的说明:
+统一使用暗色侧栏样式
+
 1. .hero-title <h1>
    selector: body > main > section > h1
    source: src/components/Hero.tsx:12
    react: Layout › Hero
    text: "Welcome to the Dashboard"
    html: <h1 class="hero-title">Welcome to the Dashboard</h1>
-   instruction: Make this red and larger
+   修改说明: Make this red and larger
 
 2. .sidebar <nav>
    selector: body > aside > nav
    text: "Home Settings Profile Logout"
    html: <nav class="sidebar">…
-   instruction: Add an "Analytics" link after "Settings"
+   修改说明: Add an "Analytics" link after "Settings"
 ```
 
 ## How it works

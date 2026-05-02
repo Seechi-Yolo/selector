@@ -1,7 +1,7 @@
-/* PRD D-16：相对旧版约 1.5× 宽、2× 高（旧浮动宽约 300px） */
+/* PRD D-16：相对旧版约 1.5× 宽、2× 高（基准约 300×300 → 450×600） */
 .sel-volt.sel-session-panel {
   width: min(450px, calc(100vw - 32px));
-  min-height: 560px;
+  min-height: 600px;
   max-height: min(78vh, 720px);
   display: flex;
   flex-direction: column;
@@ -169,8 +169,11 @@
   box-shadow: 0 0 0 1px rgba(0, 217, 146, 0.12);
 }
 
+/* D-05：悬停强化（title 已含「点击移除操作」） */
 .sel-session-tag-x:hover {
   color: var(--sel-snow);
+  outline: 1px solid rgba(0, 217, 146, 0.35);
+  outline-offset: 1px;
 }
 
 /* D-21 第一次点击后待确认的轻微提示（D-05 微动效） */

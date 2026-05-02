@@ -1,7 +1,7 @@
 import { useMemo, type ReactNode } from "react";
 import type { SelectionSessionState } from "../../../entities/selection-session";
 import type { PanelTag } from "../../editor-panel/panel-tag";
-import { guidanceFromSession } from "../guidance-from-session";
+import { guidanceFromSession, type SessionGuidanceSecondary } from "../guidance-from-session";
 import "./design-tokens.css";
 import "./selection-session-panel.css";
 import { ShinyText } from "./react-bits/shiny-text";
@@ -17,6 +17,22 @@ const ICON_EXPAND = (
     <path d="M1 7L5 3L9 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
+
+function renderGuidanceSecondaryLine(s: SessionGuidanceSecondary): ReactNode {
+  return (
+    <span key={s.id} className="sel-session-guidance-secondary-line">
+      {s.chunks.map((c, i) =>
+        c.kind === "kbd" ? (
+          <kbd key={`${s.id}-${i}`} className="sel-session-kbd">
+            {c.value}
+          </kbd>
+        ) : (
+          <span key={`${s.id}-${i}`}>{c.value}</span>
+        ),
+      )}
+    </span>
+  );
+}
 
 const ICON_CLOSE = (
   <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>
@@ -73,11 +89,7 @@ export function SelectionSessionPanel(props: SelectionSessionPanelProps) {
   const perItemText =
     focusId != null ? (props.session.drafts.perItemBodies[focusId] ?? "") : "";
 
-  const secondaryNodes: ReactNode[] = guidance.secondaries.map((s) => (
-    <span key={s.id} className="sel-session-guidance-secondary-line">
-      {s.text}
-    </span>
-  ));
+  const secondaryNodes: ReactNode[] = guidance.secondaries.map((s) => renderGuidanceSecondaryLine(s));
 
   return (
     <div className={rootClass}>

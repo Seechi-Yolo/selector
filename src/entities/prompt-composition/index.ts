@@ -28,7 +28,7 @@ export function buildPromptText(payload: PromptPayload): string {
 
   const overall = payload.selectionLevelInstruction?.trim();
   if (overall) {
-    lines.push("Selection-level instruction:");
+    lines.push("对当前选取的说明:");
     lines.push(overall);
     lines.push("");
   }
@@ -45,7 +45,7 @@ export function buildPromptText(payload: PromptPayload): string {
     if (element.outerHTML) lines.push(`   html: ${element.outerHTML}`);
 
     const annotation = payload.annotations[element.id];
-    if (annotation) lines.push(`   instruction: ${annotation}`);
+    if (annotation) lines.push(`   修改说明: ${annotation}`);
   }
 
   return lines.join("\n");

@@ -30,6 +30,7 @@ import {
   resolveTarget,
 } from "../../shared/dom/page-elements";
 import { EditorChromeTheme } from "../../shared/editor-chrome";
+import { NS } from "../../shared/dom/constants";
 import { SelectionOverlays, type InstructionEditRequest, type SelectionOverlayViz } from "../../shared/ui";
 
 interface ListenerRecord {
@@ -65,6 +66,7 @@ export class SelectorContentApp {
   private removeArm = initialRemoveArm();
   private shiftQuietTimer: number | null = null;
   private clipboardFlushTimer: number | null = null;
+  private pauseScrim: HTMLDivElement | null = null;
 
   constructor() {
     const seed = createSessionReduceSeed();
@@ -180,6 +182,8 @@ export class SelectorContentApp {
     this.overlays.destroy();
     this.onboarding?.destroy();
     this.onboarding = null;
+    this.pauseScrim?.remove();
+    this.pauseScrim = null;
     this.panel?.destroy();
     this.panel = null;
     EditorChromeTheme.remove();
@@ -631,6 +635,24 @@ export class SelectorContentApp {
       }),
     );
     this.panel?.setSessionState(this.session);
+    this.syncPauseScrim();
+  }
+
+  /** D-19：暂停且已选时加整页弱遮罩（描边已为灰；遮罩不拦截扩展 UI） */
+  private syncPauseScrim(): void {
+    const show = this.session.picking === "paused" && this.session.selectionCount > 0;
+    if (show) {
+      if (!this.pauseScrim) {
+        const el = document.createElement("div");
+        el.className = `${NS}-pause-scrim`;
+        el.setAttribute("aria-hidden", "true");
+        document.body.appendChild(el);
+        this.pauseScrim = el;
+      }
+    } else if (this.pauseScrim) {
+      this.pauseScrim.remove();
+      this.pauseScrim = null;
+    }
   }
 
   private positionAllOverlays(): void {

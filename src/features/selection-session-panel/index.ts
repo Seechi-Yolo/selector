@@ -8,5 +8,9 @@ export type {
 
 export { mapSelectionSessionToPresentation } from "./map-selection-session-to-presentation";
 export { guidanceFromSession } from "./guidance-from-session";
-export type { SessionGuidanceView, SessionGuidanceSecondary } from "./guidance-from-session";
+export type {
+  GuidanceChunk,
+  SessionGuidanceView,
+  SessionGuidanceSecondary,
+} from "./guidance-from-session";
 export { SelectionSessionPanel } from "./ui/SelectionSessionPanel";
