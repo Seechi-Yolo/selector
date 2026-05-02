@@ -13,18 +13,18 @@ export interface PromptElementContext {
   react?: string;
 }
 
-export interface PromptDocument {
+export interface PromptPayload {
   pagePath: string;
   elements: PromptElementContext[];
   annotations: Record<ElementId, string>;
 }
 
-export function buildPromptText(document: PromptDocument): string {
-  if (document.elements.length === 0) return "";
+export function buildPromptText(payload: PromptPayload): string {
+  if (payload.elements.length === 0) return "";
 
-  const lines = [`Page: ${document.pagePath}`, ""];
+  const lines = [`Page: ${payload.pagePath}`, ""];
 
-  for (const element of document.elements) {
+  for (const element of payload.elements) {
     lines.push(`${element.index}. ${element.label} <${element.tag}>`);
     if (element.selector) lines.push(`   selector: ${element.selector}`);
     if (element.source) lines.push(`   source: ${element.source}`);
@@ -35,7 +35,7 @@ export function buildPromptText(document: PromptDocument): string {
     }
     if (element.outerHTML) lines.push(`   html: ${element.outerHTML}`);
 
-    const annotation = document.annotations[element.id];
+    const annotation = payload.annotations[element.id];
     if (annotation) lines.push(`   instruction: ${annotation}`);
   }
 
