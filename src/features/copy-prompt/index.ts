@@ -17,6 +17,8 @@ export async function copyPrompt(params: {
   pagePath: string;
   contextReader: PromptContextReader;
   clipboard: ClipboardPort;
+  /** PRD D-14：整次选取集说明（可选） */
+  selectionLevelInstruction?: string;
 }): Promise<boolean> {
   const elements = params.selectedIds
     .map((id, index) => params.contextReader.read(id, index + 1))
@@ -26,6 +28,7 @@ export async function copyPrompt(params: {
     pagePath: params.pagePath,
     elements,
     annotations: params.annotations,
+    selectionLevelInstruction: params.selectionLevelInstruction,
   });
 
   if (!text) return false;

@@ -1,1 +1,2 @@
-export { EditorPanel, type EditorPanelOptions, type PanelTag } from "./editor-panel";
+export { EditorPanel, type EditorPanelOptions } from "./editor-panel";
+export type { PanelTag } from "./panel-tag";

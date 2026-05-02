@@ -17,12 +17,21 @@ export interface PromptPayload {
   pagePath: string;
   elements: PromptElementContext[];
   annotations: Record<ElementId, string>;
+  /** D-14：整次选取集说明；线性串接时默认在逐项列表前 */
+  selectionLevelInstruction?: string;
 }
 
 export function buildPromptText(payload: PromptPayload): string {
   if (payload.elements.length === 0) return "";
 
   const lines = [`Page: ${payload.pagePath}`, ""];
+
+  const overall = payload.selectionLevelInstruction?.trim();
+  if (overall) {
+    lines.push("Selection-level instruction:");
+    lines.push(overall);
+    lines.push("");
+  }
 
   for (const element of payload.elements) {
     lines.push(`${element.index}. ${element.label} <${element.tag}>`);
