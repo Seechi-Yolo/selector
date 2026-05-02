@@ -445,3 +445,131 @@
   color: #666;
   line-height: 1.6;
 }
+
+/* ── First-visit onboarding (above panel) ─────────────── */
+.ai-editor-onboarding {
+  position: fixed;
+  z-index: 2147483647;
+  width: 300px;
+  max-width: calc(100vw - 16px);
+  pointer-events: auto;
+}
+
+.ai-editor-onboarding-inner {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.03),
+    0 8px 24px -4px rgba(0, 0, 0, 0.14);
+  padding: 12px 12px 10px;
+  user-select: text;
+}
+
+.ai-editor-onboarding-step {
+  margin: 0 0 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.ai-editor-onboarding-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.35;
+}
+
+.ai-editor-onboarding-media {
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f4f4f5;
+  border: 1px solid #e8e8e8;
+  margin-bottom: 8px;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-editor-onboarding-gif {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ai-editor-onboarding-gif-fallback {
+  font-size: 11px;
+  color: #999;
+}
+
+.ai-editor-onboarding-body {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #444;
+}
+
+.ai-editor-onboarding-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-editor-onboarding-dots {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.ai-editor-onboarding-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ddd;
+}
+
+.ai-editor-onboarding-dot-active {
+  background: #111;
+}
+
+.ai-editor-onboarding-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-editor-onboarding-skip {
+  border: none;
+  background: none;
+  font-size: 11px;
+  color: #888;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.ai-editor-onboarding-skip:hover {
+  color: #333;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.ai-editor-onboarding-next {
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+}
+
+.ai-editor-onboarding-next:hover {
+  background: #333;
+}

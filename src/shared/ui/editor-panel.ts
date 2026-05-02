@@ -70,6 +70,11 @@ export class EditorPanel {
     return this.minimized;
   }
 
+  /** Host element for layout anchoring (e.g. onboarding card above the panel). */
+  get element(): HTMLDivElement {
+    return this.root;
+  }
+
   destroy(): void {
     if (this.copyTimer) window.clearTimeout(this.copyTimer);
     this.root.remove();

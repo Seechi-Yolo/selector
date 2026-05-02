@@ -9,7 +9,13 @@
   "background": {
     "service_worker": "assets/service-worker.js"
   },
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab", "scripting", "contextMenus"],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/tutorial/placeholder.gif"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "commands": {
     "open-selector": {
       "suggested_key": {

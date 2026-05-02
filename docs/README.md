@@ -9,5 +9,6 @@
 | [architecture-ddd.md](./architecture-ddd.md) | 限界上下文、分层（✅ 阶段一与 `src/` 对齐） |
 | [extension.md](./extension.md) | MV3、权限、产物、验收（✅ 阶段一已满足骨架与侧载路径） |
 | [capability-backlog.md](./capability-backlog.md) | 按里程碑分列；**1** 已收口为摘要，**2–5** 仍为待办方向 |
+| [user-tutorial.md](./user-tutorial.md) | 使用教程页：产品规划、分界面说明、GIF 占位与命名约定 |
 
 实现变更时同步对应文档；**阶段完成**时在索引与本文件相关小节打 ✅ 并收紧已完成段的篇幅。

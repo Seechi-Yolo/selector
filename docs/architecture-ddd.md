@@ -11,7 +11,7 @@
 | Element Selection | 悬停、点选/多选、框选、键盘导航、撤销 |
 | Annotation | 与选中项绑定的说明 |
 | Prompt Composition | 选中 + 标注 → 可复制文本；**消费用户模板配置**（里程碑 3） |
-| Editor Shell | 面板、快捷键、与选取流程协调 |
+| Editor Shell | 面板、快捷键、与选取流程协调；首访三步引导见 `features/editor-onboarding`（纯 UI + `localStorage` 门闩，由应用层挂载） |
 | Bootstrap | 注入生命周期；与 content script / 激活入口对齐（见 [extension.md](./extension.md)） |
 
 选取与标注由应用层编排；提示词层只读其模型。

@@ -1,5 +1,6 @@
 import { saveAnnotation, clearSelectionAnnotation } from "../../features/annotate-selection";
 import { copyPrompt } from "../../features/copy-prompt";
+import { EditorOnboarding, isFirstThreeOnboardingDone } from "../../features/editor-onboarding";
 import { SelectionController } from "../../features/select-elements";
 import { BrowserClipboard } from "../../shared/clipboard";
 import type { ElementId } from "../../entities/element-selection";
@@ -40,6 +41,7 @@ export class SelectorContentApp {
   private readonly overlays = new SelectionOverlays((id, button) => this.showAnnotation(id, button));
   private readonly listeners: ListenerRecord[] = [];
   private panel: EditorPanel | null = null;
+  private onboarding: EditorOnboarding | null = null;
   private dragState: DragState | null = null;
   private wasJustDragging = false;
   private rafPending = false;
@@ -88,6 +90,27 @@ export class SelectorContentApp {
     this.on(window, "scroll", scheduleReposition, true);
     this.on(window, "resize", scheduleReposition, false);
     this.render();
+
+    if (!isFirstThreeOnboardingDone()) {
+      this.mountOnboarding();
+    }
+  }
+
+  /** 扩展图标右键「查看使用教程」：无论是否首访都重新展示三步引导。 */
+  openTutorialFromMenu(): void {
+    this.mountOnboarding();
+  }
+
+  private mountOnboarding(): void {
+    this.onboarding?.destroy();
+    this.onboarding = null;
+    this.onboarding = new EditorOnboarding(
+      () => this.panel?.element ?? null,
+      () => {
+        this.onboarding = null;
+      },
+    );
+    this.onboarding.mount();
   }
 
   destroy(): void {
@@ -98,6 +121,8 @@ export class SelectorContentApp {
     this.cancelDrag();
     this.popover.remove();
     this.overlays.destroy();
+    this.onboarding?.destroy();
+    this.onboarding = null;
     this.panel?.destroy();
     this.panel = null;
     removeEditorStyle();
