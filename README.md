@@ -26,7 +26,7 @@ Open any web page and click the **Selector** extension action. You can also use 
 | **Drag** | Marquee (range) select multiple elements |
 | **↑ / ↓** | Navigate to parent / child element |
 | **← / →** | Navigate to previous / next sibling |
-| **Edit instruction** (on-page control) | Open the instruction surface: per-item **修改说明**, or selection-level **对当前选取的说明** when multi-select requires it |
+| **Edit instruction** (bottom-right on each selection outline) | Open the instruction surface: per-item **修改说明**; with multi-select before the whole-set step, the **union** outline shows **整段说明** for **对当前选取的说明** (same paths as **Enter**) |
 | **⌘/Ctrl + C** | Copy the composed **复制提示词** to the clipboard (same text as auto-sync) |
 | **⌘/Ctrl + Z** | Undo the last selection / annotation change |
 | **Space** | Pause / resume picking |

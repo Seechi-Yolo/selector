@@ -13,4 +13,4 @@ export type {
   SessionGuidanceView,
   SessionGuidanceSecondary,
 } from "./guidance-from-session";
-export { SelectionSessionPanel, type SelectionSessionMainTab } from "./ui/SelectionSessionPanel";
+export { SelectionSessionPanel } from "./ui/SelectionSessionPanel";

@@ -1,10 +1,24 @@
-import { useMemo, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  type ReactElement,
+} from "react";
 import type { SelectionSessionState } from "../../../entities/selection-session";
 import type { PanelTag } from "../../editor-panel/panel-tag";
-import { guidanceFromSession, type SessionGuidanceSecondary } from "../guidance-from-session";
 import "./design-tokens.css";
 import "./selection-session-panel.css";
-import { ShinyText } from "./react-bits/shiny-text";
+
+const FLOATING_PANEL_SIZE_KEY = "selector.floatingPanelSize";
+const MIN_PANEL_W = 100;
+const MIN_PANEL_H = 136;
+
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, n));
+}
 
 const ICON_MINIMIZE = (
   <svg width="9" height="3" viewBox="0 0 10 2" fill="none" aria-hidden>
@@ -25,57 +39,169 @@ const ICON_CLOSE = (
   </svg>
 );
 
-/** 标题栏单键：左右尖角，切换「提示 / 当前选中」 */
-const ICON_TAB_SWAP = (
-  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden>
-    <path d="M5 2L2 6L5 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M7 2L10 6L7 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
-function renderGuidanceSecondaryLine(s: SessionGuidanceSecondary): ReactNode {
-  return (
-    <span key={s.id} className="sel-session-guidance-secondary-line">
-      {s.chunks.map((c, i) =>
-        c.kind === "kbd" ? (
-          <kbd key={`${s.id}-${i}`} className="sel-session-kbd">
-            {c.value}
-          </kbd>
-        ) : (
-          <span key={`${s.id}-${i}`}>{c.value}</span>
-        ),
-      )}
-    </span>
-  );
-}
-
-export type SelectionSessionMainTab = "prompt" | "selected";
-
 export interface SelectionSessionPanelProps {
   session: SelectionSessionState;
   tags: PanelTag[];
   minimized: boolean;
   layout: "floating" | "sandbox";
   toastMessage: string | null;
-  userHasManualCopiedOnce: boolean;
   onMinimize(): void;
   onClose(): void;
   onTagFocusRequest(tagId: PanelTag["id"]): void;
 }
 
-export function SelectionSessionPanel(props: SelectionSessionPanelProps) {
-  const [mainTab, setMainTab] = useState<SelectionSessionMainTab>("prompt");
-
-  const guidance = useMemo(
-    () =>
-      guidanceFromSession({
-        session: props.session,
-        userHasManualCopiedOnce: props.userHasManualCopiedOnce,
-      }),
-    [props.session, props.userHasManualCopiedOnce],
+function renderTagRow(
+  tag: PanelTag,
+  index: number,
+  opts: {
+    multi: boolean;
+    isFocus: boolean;
+    onTagFocusRequest: (id: PanelTag["id"]) => void;
+  },
+): ReactElement {
+  const { multi, isFocus, onTagFocusRequest } = opts;
+  return (
+    <li key={tag.id} className="sel-session-tag-row sel-session-tag-row--list-only">
+      <span
+        className={"sel-session-tag" + (isFocus ? " sel-session-tag--focus" : "")}
+        data-focus={isFocus ? "1" : "0"}
+        role={multi ? "button" : undefined}
+        tabIndex={multi ? 0 : undefined}
+        title={
+          multi
+            ? isFocus
+              ? "当前焦点项"
+              : "点击设为焦点项"
+            : undefined
+        }
+        aria-label={
+          multi
+            ? isFocus
+              ? `当前焦点：${tag.label}`
+              : `设为焦点：${tag.label}`
+            : undefined
+        }
+        onClick={() => {
+          if (multi) onTagFocusRequest(tag.id);
+        }}
+        onKeyDown={(e) => {
+          if (multi && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            onTagFocusRequest(tag.id);
+          }
+        }}
+      >
+        <span className="sel-session-tag-num">{index + 1}</span>
+        <span className="sel-session-tag-label">
+          {tag.label}
+          {tag.hasAnnotation ? " *" : ""}
+        </span>
+      </span>
+    </li>
   );
+}
 
+export function SelectionSessionPanel(props: SelectionSessionPanelProps) {
   const paused = props.session.picking === "paused";
+  const n = props.tags.length;
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [customSize, setCustomSize] = useState<{ w: number; h: number } | null>(null);
+  const resizeSession = useRef<{
+    startX: number;
+    startY: number;
+    startW: number;
+    startH: number;
+    maxW: number;
+    maxH: number;
+    pointerId: number;
+    gripEl: HTMLElement;
+  } | null>(null);
+
+  useEffect(() => {
+    if (props.layout !== "floating") return;
+    try {
+      const raw = localStorage.getItem(FLOATING_PANEL_SIZE_KEY);
+      if (!raw) return;
+      const p = JSON.parse(raw) as { w?: unknown; h?: unknown };
+      if (typeof p.w !== "number" || typeof p.h !== "number") return;
+      const w = Math.round(p.w);
+      const h = Math.round(p.h);
+      if (w >= MIN_PANEL_W && h >= MIN_PANEL_H && w <= 4000 && h <= 4000) {
+        setCustomSize({ w, h });
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [props.layout]);
+
+  const onResizePointerDown = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      if (props.layout !== "floating" || props.minimized) return;
+      if (e.button !== 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const panel = panelRef.current;
+      const grip = e.currentTarget;
+      if (!panel) return;
+
+      const rect = panel.getBoundingClientRect();
+      const w0 = Math.round(rect.width);
+      const h0 = Math.round(rect.height);
+      setCustomSize({ w: w0, h: h0 });
+
+      const margin = 16;
+      resizeSession.current = {
+        startX: e.clientX,
+        startY: e.clientY,
+        startW: w0,
+        startH: h0,
+        maxW: window.innerWidth - margin,
+        maxH: window.innerHeight - margin,
+        pointerId: e.pointerId,
+        gripEl: grip,
+      };
+      grip.setPointerCapture(e.pointerId);
+
+      const onMove = (ev: globalThis.PointerEvent) => {
+        const s = resizeSession.current;
+        if (!s || ev.pointerId !== s.pointerId) return;
+        const dw = ev.clientX - s.startX;
+        const dh = ev.clientY - s.startY;
+        const w = clamp(s.startW + dw, MIN_PANEL_W, s.maxW);
+        const h = clamp(s.startH + dh, MIN_PANEL_H, s.maxH);
+        setCustomSize({ w, h });
+      };
+
+      const onUp = (ev: globalThis.PointerEvent) => {
+        const s = resizeSession.current;
+        if (!s || ev.pointerId !== s.pointerId) return;
+        try {
+          s.gripEl.releasePointerCapture(ev.pointerId);
+        } catch {
+          /* already released */
+        }
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+        resizeSession.current = null;
+        setCustomSize((prev) => {
+          if (prev) {
+            try {
+              localStorage.setItem(FLOATING_PANEL_SIZE_KEY, JSON.stringify(prev));
+            } catch {
+              /* quota / private */
+            }
+          }
+          return prev;
+        });
+      };
+
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    },
+    [props.layout, props.minimized],
+  );
 
   const rootClass =
     "sel-volt sel-session-panel" +
@@ -83,44 +209,26 @@ export function SelectionSessionPanel(props: SelectionSessionPanelProps) {
     (props.layout === "sandbox" ? " sel-session-panel--sandbox" : "");
 
   const focusId =
-    props.session.focusElementId ?? (props.tags.length === 1 ? props.tags[0]?.id ?? null : null);
+    props.session.focusElementId ?? (n === 1 ? props.tags[0]?.id ?? null : null);
 
-  const secondaryNodes: ReactNode[] = guidance.secondaries.map((s) => renderGuidanceSecondaryLine(s));
-
-  const cycleTab = () => {
-    setMainTab((t) => (t === "prompt" ? "selected" : "prompt"));
-  };
+  const floatingSizedStyle: CSSProperties | undefined =
+    props.layout === "floating" && !props.minimized && customSize
+      ? {
+          width: customSize.w,
+          height: customSize.h,
+          aspectRatio: "auto",
+          maxWidth: "none",
+        }
+      : undefined;
 
   return (
-    <div className={rootClass}>
+    <div ref={panelRef} className={rootClass} style={floatingSizedStyle}>
       <header className="sel-session-drag" data-sel-drag-handle>
         <div className="sel-session-title">
           <span className="sel-session-dot" data-paused={paused ? "1" : "0"} />
-          <span className="sel-session-status">UI Prompt Builder</span>
+          <span className="sel-session-status">已选中</span>
         </div>
         <div className="sel-session-actions">
-          {!props.minimized ? (
-            <button
-              type="button"
-              className="sel-session-icon-btn sel-session-tab-swap-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                cycleTab();
-              }}
-              title={
-                mainTab === "prompt"
-                  ? "切换到「当前选中」：查看已选列表，并可将某一项设为键盘焦点"
-                  : "切换到「提示」：查看操作说明与快捷键提示"
-              }
-              aria-label={
-                mainTab === "prompt"
-                  ? "切换到「当前选中」：查看已选列表，并可将某一项设为键盘焦点"
-                  : "切换到「提示」：查看操作说明与快捷键提示"
-              }
-            >
-              {ICON_TAB_SWAP}
-            </button>
-          ) : null}
           <button
             type="button"
             className="sel-session-icon-btn"
@@ -151,86 +259,61 @@ export function SelectionSessionPanel(props: SelectionSessionPanelProps) {
       </header>
 
       <div className="sel-session-body">
-        {mainTab === "prompt" ? (
-          <section
-            className={
-              "sel-session-guidance" +
-              (guidance.prominentHint ? " sel-session-guidance--prominent-hint" : "")
-            }
-            aria-label="操作引导"
-          >
-            {guidance.primaryText.trim().length > 0 ? (
-              <p className="sel-session-guidance-primary">
-                {guidance.primaryUseShiny ? (
-                  <ShinyText text={guidance.primaryText} durationSec={6} />
-                ) : (
-                  guidance.primaryText
-                )}
-              </p>
+        <div className="sel-session-selected-stack">
+          <section className="sel-session-selected" aria-label="已选列表">
+            {n === 0 ? <p className="sel-session-empty-hint">暂无已选项</p> : null}
+
+            {n === 1 ? (
+              <ul className="sel-session-tree sel-session-tree--single" data-empty="0">
+                {renderTagRow(props.tags[0]!, 0, {
+                  multi: false,
+                  isFocus: focusId != null && props.tags[0]!.id === focusId,
+                  onTagFocusRequest: props.onTagFocusRequest,
+                })}
+              </ul>
             ) : null}
-            {secondaryNodes.length > 0 ? (
-              <div className="sel-session-guidance-secondary">{secondaryNodes}</div>
+
+            {n >= 2 ? (
+              <div className="sel-session-tree sel-session-tree--multi">
+                <div className="sel-session-tree-virtual-root">
+                  <span className="sel-session-tree-virtual-glyph" aria-hidden>
+                    ◇
+                  </span>
+                  <span className="sel-session-tree-virtual-title">本页选取</span>
+                  <span className="sel-session-tree-virtual-count">共 {n} 项</span>
+                </div>
+                <ul className="sel-session-tree-children" aria-label="已选中的元素">
+                  {props.tags.map((tag, index) => {
+                    const isFocus = focusId != null && tag.id === focusId;
+                    return renderTagRow(tag, index, {
+                      multi: true,
+                      isFocus,
+                      onTagFocusRequest: props.onTagFocusRequest,
+                    });
+                  })}
+                </ul>
+              </div>
             ) : null}
           </section>
-        ) : (
-          <div className="sel-session-selected-stack">
-            <section className="sel-session-selected" aria-label="当前选中">
-              {props.tags.length === 0 ? (
-                <p className="sel-session-empty-hint">暂无已选项</p>
-              ) : null}
-              <div className="sel-session-tag-rows" data-empty={props.tags.length === 0 ? "1" : "0"}>
-                {props.tags.map((tag, index) => {
-                  const isFocus = focusId != null && tag.id === focusId;
-                  return (
-                    <div key={tag.id} className="sel-session-tag-row sel-session-tag-row--list-only">
-                      <span
-                        className={"sel-session-tag" + (isFocus ? " sel-session-tag--focus" : "")}
-                        data-focus={isFocus ? "1" : "0"}
-                        role={props.tags.length > 1 ? "button" : undefined}
-                        tabIndex={props.tags.length > 1 ? 0 : undefined}
-                        title={
-                          props.tags.length > 1
-                            ? isFocus
-                              ? "当前焦点项：方向键以此项为锚点移动；Enter 可打开该项的修改说明"
-                              : "点击设为焦点项：之后方向键与 Enter 修改说明均针对此项"
-                            : undefined
-                        }
-                        aria-label={
-                          props.tags.length > 1
-                            ? isFocus
-                              ? "当前焦点项：方向键以此项为锚点移动；Enter 可打开该项的修改说明"
-                              : "点击设为焦点项：之后方向键与 Enter 修改说明均针对此项"
-                            : undefined
-                        }
-                        onClick={() => {
-                          if (props.tags.length > 1) props.onTagFocusRequest(tag.id);
-                        }}
-                        onKeyDown={(e) => {
-                          if (props.tags.length > 1 && (e.key === "Enter" || e.key === " ")) {
-                            e.preventDefault();
-                            props.onTagFocusRequest(tag.id);
-                          }
-                        }}
-                      >
-                        <span className="sel-session-tag-num">{index + 1}</span>
-                        <span className="sel-session-tag-label">
-                          {tag.label}
-                          {tag.hasAnnotation ? " *" : ""}
-                        </span>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          </div>
-        )}
+        </div>
         {props.toastMessage ? (
           <div className="sel-session-toast" role="status">
             {props.toastMessage}
           </div>
         ) : null}
       </div>
+
+      {props.layout === "floating" && !props.minimized ? (
+        <div
+          className="sel-session-resize-grip"
+          data-sel-resize-grip
+          onPointerDown={onResizePointerDown}
+          role="separator"
+          aria-orientation="horizontal"
+          aria-label="拖动右下角调整面板宽高"
+          title="拖动调整大小"
+        />
+      ) : null}
     </div>
   );
 }

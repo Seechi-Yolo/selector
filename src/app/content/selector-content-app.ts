@@ -35,6 +35,7 @@ import {
   InstructionCanvasDock,
   SelectionOverlays,
   type InstructionCanvasDockLayer,
+  type SelectionEditBadgeCallbacks,
   type SelectionOverlayViz,
 } from "../../shared/ui";
 
@@ -72,6 +73,8 @@ export class SelectorContentApp {
   private clipboardFlushTimer: number | null = null;
   private pauseScrim: HTMLDivElement | null = null;
   private instructionDock: InstructionCanvasDock;
+  private instructionCopyToastEl: HTMLDivElement | null = null;
+  private instructionCopyToastTimer: number | null = null;
   /** D-23：在扩展 UI 外 pointerdown 关闭说明层后，忽略紧随的 click，避免误改选区 */
   private suppressNextClickSelection = false;
 
@@ -102,13 +105,7 @@ export class SelectorContentApp {
         this.render();
       },
       onEnterComplete: () => {
-        if (this.session.activeLayer === "whole_set" && this.session.wholeSetFlow === "whole_required") {
-          this.dispatchSession({ type: "finalize_whole_set_instruction" });
-        } else {
-          this.dispatchSession({ type: "instruction_surface_close", atMs: Date.now() });
-        }
-        this.render();
-        this.notifyClipboardAfterInstructionSubmit();
+        void this.handleInstructionEnterComplete();
       },
       onCtrlDeleteClear: () => {
         if (this.session.activeLayer === "whole_set") {
@@ -194,6 +191,7 @@ export class SelectorContentApp {
     this.onboarding = null;
     this.pauseScrim?.remove();
     this.pauseScrim = null;
+    this.clearInstructionCopyToast();
     this.instructionDock.destroy();
     this.panel?.destroy();
     this.panel = null;
@@ -272,7 +270,35 @@ export class SelectorContentApp {
       paused: this.session.picking === "paused",
       focusId: this.session.focusElementId,
       wholeSetFlow: this.session.wholeSetFlow,
+      instructionOpen: this.session.instructionOpen,
     };
+  }
+
+  private editBadgeCallbacks(): SelectionEditBadgeCallbacks {
+    return {
+      onPerItemBadge: (elementId) => this.handlePerItemEditBadge(elementId),
+      onUnionWholeBadge: () => this.handleUnionWholeEditBadge(),
+    };
+  }
+
+  /** 各元素右下角「编辑说明」：多选须在整段放行后才可逐项 */
+  private handlePerItemEditBadge(elementId: string): void {
+    if (!this.hasSelections() || this.isPaused() || this.session.instructionOpen) return;
+    const n = this.session.selectionCount;
+    if (n >= 2 && this.session.wholeSetFlow !== "whole_done") return;
+    if (this.session.focusElementId !== elementId) {
+      this.dispatchSession({ type: "focus_change", focusElementId: elementId });
+    }
+    this.dispatchSession({ type: "open_instruction_via_edit_badge", atMs: Date.now() });
+    this.render();
+  }
+
+  /** 多选包络右下角「整段说明」 */
+  private handleUnionWholeEditBadge(): void {
+    if (!this.hasSelections() || this.isPaused() || this.session.instructionOpen) return;
+    if (this.session.selectionCount < 2 || this.session.wholeSetFlow !== "whole_required") return;
+    this.dispatchSession({ type: "open_whole_set_instruction_badge", atMs: Date.now() });
+    this.render();
   }
 
   /** 取消防抖后立刻按当前会话写剪贴板；返回是否实际写入非空提示词 */
@@ -302,14 +328,50 @@ export class SelectorContentApp {
     });
   }
 
-  /** 说明层 Enter 提交后：避免与 D-08 防抖重复写入，并在成功写入时于「提示」区展示已复制反馈 */
-  private notifyClipboardAfterInstructionSubmit(): void {
+  /** 说明层 Enter 提交：先关说明层，再立即写剪贴板；成功时在原输入锚点下短暂弹出「已复制提示词」（不经主面板） */
+  private async handleInstructionEnterComplete(): Promise<void> {
+    const snap = this.controller.snapshot();
+    const anchor = this.computeInstructionAnchorRect(snap);
+
+    if (this.session.activeLayer === "whole_set" && this.session.wholeSetFlow === "whole_required") {
+      this.dispatchSession({ type: "finalize_whole_set_instruction" });
+    } else {
+      this.dispatchSession({ type: "instruction_surface_close", atMs: Date.now() });
+    }
+    this.render();
+
     this.clearClipboardFlushTimer();
-    void this.flushClipboardDebounced().then((copied) => {
-      if (copied) {
-        this.panel?.showCopyFeedback("已复制提示词");
-      }
-    });
+    const copied = await this.flushClipboardDebounced();
+    if (copied && anchor != null) {
+      this.showInstructionCopyToast(anchor, "已复制提示词");
+    }
+  }
+
+  private clearInstructionCopyToast(): void {
+    if (this.instructionCopyToastTimer != null) {
+      window.clearTimeout(this.instructionCopyToastTimer);
+      this.instructionCopyToastTimer = null;
+    }
+    this.instructionCopyToastEl?.remove();
+    this.instructionCopyToastEl = null;
+  }
+
+  /** 紧贴说明层原锚点（选取框下沿）下方，短暂展示 */
+  private showInstructionCopyToast(anchor: DOMRect, message: string): void {
+    this.clearInstructionCopyToast();
+    const el = document.createElement("div");
+    el.className = `${NS}-root ${NS}-instruction-copy-toast`;
+    el.setAttribute("role", "status");
+    el.textContent = message;
+    const maxW = Math.min(280, window.innerWidth - 16, Math.max(160, anchor.width + 48));
+    let left = anchor.left + (anchor.width - maxW) / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - maxW - 8));
+    el.style.left = `${left}px`;
+    el.style.top = `${anchor.bottom + 8}px`;
+    el.style.width = `${maxW}px`;
+    document.body.appendChild(el);
+    this.instructionCopyToastEl = el;
+    this.instructionCopyToastTimer = window.setTimeout(() => this.clearInstructionCopyToast(), 2000);
   }
 
   private scheduleShiftQuietCommit(): void {
@@ -701,7 +763,7 @@ export class SelectorContentApp {
   private render(): void {
     const state = this.controller.snapshot();
     const viz = this.overlayViz();
-    this.overlays.render(state.selectedIds, (id) => this.itemHasInstruction(id), viz);
+    this.overlays.render(state.selectedIds, (id) => this.itemHasInstruction(id), viz, this.editBadgeCallbacks());
     this.panel?.renderTags(
       state.selectedIds.map((id) => {
         const el = byElementId(id);
@@ -786,7 +848,12 @@ export class SelectorContentApp {
 
   private positionAllOverlays(): void {
     const state = this.controller.snapshot();
-    this.overlays.positionAll(state.selectedIds, (id) => this.itemHasInstruction(id), this.overlayViz());
+    this.overlays.positionAll(
+      state.selectedIds,
+      (id) => this.itemHasInstruction(id),
+      this.overlayViz(),
+      this.editBadgeCallbacks(),
+    );
     this.syncInstructionDock();
   }
 

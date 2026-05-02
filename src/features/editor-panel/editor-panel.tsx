@@ -31,7 +31,6 @@ export class EditorPanel {
   private toastMessage: string | null = null;
   private copyTimer: number | null = null;
   private dragBound = false;
-  private userHasManualCopiedOnce = false;
 
   constructor(callbacks: EditorPanelCallbacks, options?: EditorPanelOptions) {
     this.callbacks = callbacks;
@@ -76,10 +75,8 @@ export class EditorPanel {
     this.commit();
   }
 
-  setUserHasManualCopiedOnce(value: boolean): void {
-    this.userHasManualCopiedOnce = value;
-    this.commit();
-  }
+  /** D-15：曾用于「提示」Tab 内复制辅句门闩；当前面板不展示引导，保留空实现供宿主调用。 */
+  setUserHasManualCopiedOnce(_value: boolean): void {}
 
   renderTags(tags: PanelTag[]): void {
     this.tags = tags;
@@ -150,7 +147,6 @@ export class EditorPanel {
         minimized={this.minimized}
         layout={this.layout}
         toastMessage={this.toastMessage}
-        userHasManualCopiedOnce={this.userHasManualCopiedOnce}
         onMinimize={() => this.toggleMinimize()}
         onClose={() => this.callbacks.onClose()}
         onTagFocusRequest={(id) => this.callbacks.onTagFocusRequest(id)}
@@ -175,6 +171,7 @@ export class EditorPanel {
 
     handle.addEventListener("mousedown", (event) => {
       if ((event.target as Element).closest(".sel-session-icon-btn")) return;
+      if ((event.target as Element).closest("[data-sel-resize-grip]")) return;
       event.preventDefault();
 
       const rect = panel.getBoundingClientRect();

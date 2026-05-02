@@ -128,15 +128,17 @@
   background: rgba(82, 82, 82, 0.92);
 }
 
-/* ── 选取框右下角 Enter 提示（替代原「编辑说明」角标） ─────── */
-.ai-editor-sel-enter-hint {
+/* ── 选取框右下角「编辑说明」按钮（可点，与 Enter 打开说明层同义） ─ */
+.ai-editor-sel-edit-badge {
   position: fixed;
   z-index: 2147483643;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: pointer;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
   line-height: 1.25;
+  font-family: inherit;
   color: rgba(255, 255, 255, 0.96);
   background: rgba(20, 83, 45, 0.94);
   padding: 4px 8px;
@@ -148,16 +150,16 @@
   animation: ai-editor-label-in 180ms ease forwards;
 }
 
-.ai-editor-sel-enter-hint--union {
+.ai-editor-sel-edit-badge--union {
   z-index: 2147483642;
 }
 
-.ai-editor-sel-enter-hint--has-note {
+.ai-editor-sel-edit-badge--has-note {
   border-color: rgba(59, 130, 246, 0.55);
   background: rgba(30, 58, 138, 0.92);
 }
 
-.ai-editor-sel-enter-hint--paused {
+.ai-editor-sel-edit-badge--paused {
   opacity: 0.48;
   filter: grayscale(0.85);
 }
@@ -783,4 +785,24 @@
 
 .ai-editor-instruction-dock-input::placeholder {
   color: rgba(160, 155, 150, 0.75);
+}
+
+/* 说明层 Enter 提交后：原输入框下方短暂「已复制提示词」（与主面板吐司分离） */
+.ai-editor-instruction-copy-toast {
+  position: fixed;
+  z-index: 2147483646;
+  pointer-events: none;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  background: rgba(20, 83, 45, 0.94);
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  animation: ai-editor-label-in 200ms ease forwards;
 }

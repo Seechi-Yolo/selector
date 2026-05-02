@@ -1,8 +1,11 @@
-/* PRD D-16 / D-27：极小面板（约为上一实现版约 1/2 量级） */
+/* 浮动选取面板：默认 宽:高 = 3:4；可拖右下角改宽高（见 .sel-session-resize-grip） */
 .sel-volt.sel-session-panel {
-  width: min(220px, calc(100vw - 24px));
-  min-height: 108px;
-  max-height: min(40vh, 360px);
+  box-sizing: border-box;
+  position: relative;
+  width: min(130px, calc((100vw - 24px) / 2), calc(92vh * 3 / 8));
+  aspect-ratio: 3 / 4;
+  height: auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: var(--sel-carbon);
@@ -16,6 +19,41 @@
   font-size: 11px;
   line-height: 1.4;
   overflow: hidden;
+}
+
+.sel-session-resize-grip {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  z-index: 4;
+  width: 18px;
+  height: 18px;
+  cursor: nwse-resize;
+  touch-action: none;
+  border-radius: 0 0 var(--sel-radius-card) 0;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    transparent 45%,
+    rgba(255, 255, 255, 0.12) 45%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 50%,
+    transparent 55%,
+    rgba(255, 255, 255, 0.12) 55%,
+    rgba(255, 255, 255, 0.12) 60%,
+    transparent 60%
+  );
+}
+
+.sel-session-resize-grip:hover {
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(0, 217, 146, 0.35) 40%,
+    rgba(0, 217, 146, 0.35) 65%,
+    transparent 65%
+  );
 }
 
 .sel-session-drag {
@@ -97,11 +135,6 @@
   flex-direction: column;
 }
 
-/* D-26：标题栏单键切换视图（左右箭头） */
-.sel-session-tab-swap-btn {
-  flex-shrink: 0;
-}
-
 .sel-session-selected-stack {
   flex: 1 1 auto;
   min-height: 0;
@@ -113,13 +146,6 @@
 .sel-session-selected {
   padding: 6px 8px 8px;
   flex: 0 0 auto;
-}
-
-.sel-session-tag-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  width: 100%;
 }
 
 .sel-session-tag-row {
@@ -139,10 +165,6 @@
   margin: 0;
   font-size: 10px;
   color: var(--sel-slate);
-}
-
-.sel-session-tag-rows[data-empty="1"] {
-  display: none;
 }
 
 .sel-session-tag {
@@ -171,7 +193,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 118px;
+  max-width: min(220px, calc(100% - 8px));
 }
 
 .sel-session-tag--focus {
@@ -179,62 +201,66 @@
   box-shadow: 0 0 0 1px rgba(0, 217, 146, 0.12);
 }
 
-.sel-session-guidance {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-  padding: 6px 8px 8px;
-  background: var(--sel-abyss);
-}
-
-.sel-session-guidance-primary {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--sel-snow);
-  margin: 0 0 4px;
-}
-
-.sel-session-guidance-secondary {
+/* 多选：虚拟根「本页选取」+ 子列表 */
+.sel-session-tree {
   display: flex;
   flex-direction: column;
-  flex-wrap: nowrap;
-  gap: 3px;
-  font-size: 8px;
-  font-weight: 400;
-  color: rgba(168, 162, 158, 0.92);
+  gap: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.sel-session-guidance-secondary-line {
-  display: block;
-  line-height: 1.45;
+.sel-session-tree--single {
+  gap: 5px;
 }
 
-.sel-session-kbd {
-  font-family: var(--sel-font-mono);
-  font-size: 8px;
-  padding: 1px 4px;
-  border-radius: 3px;
-  border: 1px solid var(--sel-border);
-  color: var(--sel-parchment);
-  background: rgba(255, 255, 255, 0.04);
+.sel-session-tree--multi {
+  gap: 2px;
 }
 
-/* 单选未开说明：仅方向键 + Esc 时放大整段引导 */
-.sel-session-guidance--prominent-hint .sel-session-guidance-secondary {
-  font-size: 12px;
-  font-weight: 500;
+.sel-session-tree-virtual-root {
+  display: flex;
+  align-items: center;
   gap: 6px;
-  color: var(--sel-snow);
+  padding: 2px 2px 6px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--sel-parchment);
 }
 
-.sel-session-guidance--prominent-hint .sel-session-guidance-secondary-line {
-  line-height: 1.5;
+.sel-session-tree-virtual-glyph {
+  flex-shrink: 0;
+  font-size: 9px;
+  color: var(--sel-mint);
+  opacity: 0.85;
 }
 
-.sel-session-guidance--prominent-hint .sel-session-kbd {
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 4px;
+.sel-session-tree-virtual-title {
+  flex: 1;
+  min-width: 0;
+  letter-spacing: 0.02em;
+}
+
+.sel-session-tree-virtual-count {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--sel-slate);
+}
+
+.sel-session-tree-children {
+  margin: 0;
+  padding: 4px 0 2px 10px;
+  list-style: none;
+  border-left: 1px solid rgba(0, 217, 146, 0.22);
+  margin-left: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .sel-session-toast {
@@ -243,44 +269,17 @@
   color: var(--sel-mint);
 }
 
-.sel-shiny-text {
-  display: inline;
-  background-image: linear-gradient(
-    120deg,
-    var(--sel-parchment) 0%,
-    var(--sel-parchment) 38%,
-    var(--sel-signal) 50%,
-    var(--sel-parchment) 62%,
-    var(--sel-parchment) 100%
-  );
-  background-size: 220% auto;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  animation-name: sel-shiny-sweep;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-
-@keyframes sel-shiny-sweep {
-  0% {
-    background-position: 220% center;
-  }
-  100% {
-    background-position: -220% center;
-  }
-}
-
 .sel-session-minimized .sel-session-body {
   display: none;
 }
 
 /* 最小化：整面板缩为右侧竖条（与外层 .ai-editor-minimized 磁吸配合） */
 .sel-session-panel.sel-session-minimized {
+  aspect-ratio: auto;
   width: 36px;
   min-width: 36px;
   max-width: 36px;
+  height: auto;
   min-height: 0;
   max-height: none;
   border-radius: 10px;
@@ -312,4 +311,8 @@
 .sel-session-panel--sandbox {
   width: 100%;
   max-width: 100%;
+  aspect-ratio: auto;
+  height: auto;
+  min-height: min(160px, 28vh);
+  max-height: min(36vh, 320px);
 }
