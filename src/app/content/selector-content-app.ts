@@ -1,5 +1,5 @@
 import { saveAnnotation, clearSelectionAnnotation } from "../../features/annotate-selection";
-import { buildElementContext, copyPrompt } from "../../features/copy-prompt";
+import { buildElementContext, copyPrompt, wouldCopyPromptProduceText } from "../../features/copy-prompt";
 import { EditorPanel } from "../../features/editor-panel";
 import { tryMountTutorialIntro, type EditorOnboarding } from "../../features/editor-onboarding";
 import { SelectionController } from "../../features/select-elements";
@@ -7,6 +7,7 @@ import {
   FORMATION_QUIET_MS,
   applyRemoveClick,
   createSessionReduceSeed,
+  disarmRemove,
   initialRemoveArm,
   reduceSelectionSession,
   type ClipboardWriteIntent,
@@ -29,7 +30,7 @@ import {
   resolveTarget,
 } from "../../shared/dom/page-elements";
 import { EditorChromeTheme } from "../../shared/editor-chrome";
-import { AnnotationPopover, SelectionOverlays } from "../../shared/ui";
+import { SelectionOverlays, type InstructionEditRequest, type SelectionOverlayViz } from "../../shared/ui";
 
 interface ListenerRecord {
   target: EventTarget;
@@ -49,8 +50,7 @@ interface DragState {
 export class SelectorContentApp {
   private readonly controller = new SelectionController();
   private readonly clipboard = new BrowserClipboard();
-  private readonly popover = new AnnotationPopover();
-  private readonly overlays = new SelectionOverlays((id, button) => this.showAnnotation(id, button));
+  private readonly overlays = new SelectionOverlays((req) => this.handleInstructionEditRequest(req));
   private readonly listeners: ListenerRecord[] = [];
   private panel: EditorPanel | null = null;
   private onboarding: EditorOnboarding | null = null;
@@ -87,12 +87,56 @@ export class SelectorContentApp {
         this.controller.remember();
         this.controller.clear();
         this.removeArm = initialRemoveArm();
+        this.panel?.setRemoveArmedTag(null);
         this.clearShiftQuietTimer();
         this.dispatchSession({ type: "clear_selection", atMs: Date.now() });
-        this.popover.remove();
         this.render();
       },
       onMinimizeChange: () => this.overlays.showHover(null, (id) => this.controller.hasSelection(id)),
+      onTagFocusRequest: (tagId) => {
+        if (this.session.selectionCount <= 1) return;
+        if (this.session.focusElementId === tagId) return;
+        this.disarmRemoveUi();
+        this.dispatchSession({ type: "focus_change", focusElementId: tagId });
+        this.render();
+      },
+      onInstructionSurfaceClose: () => {
+        this.dispatchSession({ type: "instruction_surface_close", atMs: Date.now() });
+        this.render();
+      },
+      onFinalizeWholeSetInstruction: () => {
+        this.dispatchSession({ type: "finalize_whole_set_instruction" });
+        this.render();
+      },
+      onWholeSetDraftChange: (text) => {
+        this.dispatchSession({ type: "draft_set_text", scope: "whole_set", text, atMs: Date.now() });
+        this.render();
+      },
+      onWholeSetDraftClear: () => {
+        this.dispatchSession({ type: "draft_clear", scope: "whole_set", atMs: Date.now() });
+        this.render();
+      },
+      onPerItemDraftChange: (elementId, text) => {
+        saveAnnotation(this.controller, elementId, text);
+        this.dispatchSession({
+          type: "draft_set_text",
+          scope: "per_item",
+          elementId,
+          text,
+          atMs: Date.now(),
+        });
+        this.render();
+      },
+      onPerItemDraftClear: (elementId) => {
+        clearSelectionAnnotation(this.controller, elementId);
+        this.dispatchSession({
+          type: "draft_clear",
+          scope: "per_item",
+          elementId,
+          atMs: Date.now(),
+        });
+        this.render();
+      },
     });
 
     this.on(document, "mousedown", (event) => this.handleMouseDown(event as MouseEvent), true);
@@ -133,7 +177,6 @@ export class SelectorContentApp {
     this.clearShiftQuietTimer();
     this.clearClipboardFlushTimer();
     this.cancelDrag();
-    this.popover.remove();
     this.overlays.destroy();
     this.onboarding?.destroy();
     this.onboarding = null;
@@ -168,6 +211,11 @@ export class SelectorContentApp {
     }
   }
 
+  private disarmRemoveUi(): void {
+    this.removeArm = disarmRemove(this.removeArm);
+    this.panel?.setRemoveArmedTag(null);
+  }
+
   private clearShiftQuietTimer(): void {
     if (this.shiftQuietTimer != null) {
       window.clearTimeout(this.shiftQuietTimer);
@@ -192,13 +240,50 @@ export class SelectorContentApp {
     }, wait);
   }
 
+  private mergeAnnotationsForPrompt(snap: ReturnType<SelectionController["snapshot"]>): Record<string, string> {
+    const out: Record<string, string> = { ...snap.annotations };
+    for (const id of snap.selectedIds) {
+      if (Object.prototype.hasOwnProperty.call(this.session.drafts.perItemBodies, id)) {
+        out[id] = this.session.drafts.perItemBodies[id] ?? "";
+      }
+    }
+    return out;
+  }
+
+  private itemHasInstruction(id: string): boolean {
+    const snap = this.controller.snapshot();
+    const fromCtrl = (snap.annotations[id] ?? "").trim().length > 0;
+    const fromDraft = (this.session.drafts.perItemBodies[id] ?? "").trim().length > 0;
+    return fromCtrl || fromDraft;
+  }
+
+  private overlayViz(): SelectionOverlayViz {
+    return {
+      paused: this.session.picking === "paused",
+      focusId: this.session.focusElementId,
+      wholeSetFlow: this.session.wholeSetFlow,
+    };
+  }
+
   private async flushClipboardDebounced(): Promise<void> {
     const snap = this.controller.snapshot();
     if (snap.selectedIds.length === 0) return;
     const overall = this.session.drafts.selectionLevelBody.trim();
+    const merged = this.mergeAnnotationsForPrompt(snap);
+    if (
+      !wouldCopyPromptProduceText({
+        selectedIds: snap.selectedIds,
+        annotations: merged,
+        pagePath: location.pathname,
+        contextReader: { read: buildElementContext },
+        selectionLevelInstruction: overall.length > 0 ? overall : undefined,
+      })
+    ) {
+      return;
+    }
     await copyPrompt({
       selectedIds: snap.selectedIds,
-      annotations: snap.annotations,
+      annotations: merged,
       pagePath: location.pathname,
       contextReader: { read: buildElementContext },
       clipboard: this.clipboard,
@@ -229,9 +314,11 @@ export class SelectorContentApp {
     const out = applyRemoveClick(this.removeArm, id, now);
     this.removeArm = out.next;
     if (!out.executeRemove) {
+      this.panel?.setRemoveArmedTag(out.next.targetId);
       this.panel?.showCopyFeedback("再次点击以移除此项");
       return;
     }
+    this.panel?.setRemoveArmedTag(null);
     this.removeArm = initialRemoveArm();
     this.controller.remember();
     this.controller.remove(id);
@@ -312,6 +399,7 @@ export class SelectorContentApp {
     const marqueeRect = this.dragState.marquee.getBoundingClientRect();
     this.cancelDrag();
 
+    this.disarmRemoveUi();
     this.controller.remember();
     if (!event.shiftKey) this.controller.clear();
 
@@ -343,12 +431,12 @@ export class SelectorContentApp {
 
     event.preventDefault();
     event.stopPropagation();
-    this.popover.remove();
     window.getSelection()?.removeAllRanges();
 
     const target = resolveTarget(event.target);
     if (!target) return;
 
+    this.disarmRemoveUi();
     this.controller.remember();
     const id = elementId(target);
     const at = Date.now();
@@ -385,24 +473,22 @@ export class SelectorContentApp {
     const mod = event.metaKey || event.ctrlKey;
 
     if (event.key === "Escape") {
-      if (this.popover.isOpen) this.popover.remove();
-      else {
-        const out = reduceSelectionSession(this.session, this.clipboardIntent, { type: "esc", atMs: Date.now() });
-        this.session = out.state;
-        this.clipboardIntent = out.clipboard;
-        for (const eff of out.effects) {
-          if (eff.type === "clipboard_schedule_changed") {
-            this.scheduleClipboardFlush(eff.flushAtMs);
-          }
-          if (eff.type === "selection_cleared") {
-            this.controller.remember();
-            this.controller.clear();
-            this.popover.remove();
-            this.removeArm = initialRemoveArm();
-          }
+      this.disarmRemoveUi();
+      const out = reduceSelectionSession(this.session, this.clipboardIntent, { type: "esc", atMs: Date.now() });
+      this.session = out.state;
+      this.clipboardIntent = out.clipboard;
+      for (const eff of out.effects) {
+        if (eff.type === "clipboard_schedule_changed") {
+          this.scheduleClipboardFlush(eff.flushAtMs);
         }
-        this.render();
+        if (eff.type === "selection_cleared") {
+          this.controller.remember();
+          this.controller.clear();
+          this.removeArm = initialRemoveArm();
+          this.panel?.setRemoveArmedTag(null);
+        }
       }
+      this.render();
       return;
     }
 
@@ -415,14 +501,25 @@ export class SelectorContentApp {
     if (mod && event.key.toLowerCase() === "z" && !event.shiftKey) {
       event.preventDefault();
       if (this.controller.undo()) {
+        this.disarmRemoveUi();
         const snap = this.controller.snapshot();
         const n = snap.selectedIds.length;
         const at = Date.now();
         if (n === 0) {
           this.dispatchSession({ type: "clear_selection", atMs: at });
         } else {
-          const focus = snap.selectedIds[n - 1] ?? null;
-          this.dispatchSession({ type: "immediate_select", count: n, focusElementId: focus, atMs: at });
+          const perItem: Record<string, string> = {};
+          for (const id of snap.selectedIds) {
+            perItem[id] = snap.annotations[id] ?? "";
+          }
+          this.dispatchSession({
+            type: "sync_session_after_undo",
+            count: n,
+            focusElementId: snap.selectedIds[n - 1] ?? null,
+            perItemBodies: perItem,
+            selectionLevelBody: "",
+            atMs: at,
+          });
         }
         this.render();
       }
@@ -471,6 +568,7 @@ export class SelectorContentApp {
     const next = this.findNavigationTarget(current, direction);
     if (!next) return;
 
+    this.disarmRemoveUi();
     this.controller.remember();
     const nid = elementId(next);
     this.controller.selectOnly(nid);
@@ -505,7 +603,7 @@ export class SelectorContentApp {
     const overall = this.session.drafts.selectionLevelBody.trim();
     const copied = await copyPrompt({
       selectedIds: state.selectedIds,
-      annotations: state.annotations,
+      annotations: this.mergeAnnotationsForPrompt(state),
       pagePath: location.pathname,
       contextReader: { read: buildElementContext },
       clipboard: this.clipboard,
@@ -514,20 +612,21 @@ export class SelectorContentApp {
 
     if (copied) {
       this.panel?.setUserHasManualCopiedOnce(true);
-      this.panel?.showCopyFeedback("已复制");
+      this.panel?.showCopyFeedback("已复制复制提示词");
     }
   }
 
   private render(): void {
     const state = this.controller.snapshot();
-    this.overlays.render(state.selectedIds, (id) => Boolean(state.annotations[id]));
+    const viz = this.overlayViz();
+    this.overlays.render(state.selectedIds, (id) => this.itemHasInstruction(id), viz);
     this.panel?.renderTags(
       state.selectedIds.map((id) => {
         const el = byElementId(id);
         return {
           id,
           label: el ? elementLabel(el) : id,
-          hasAnnotation: Boolean(state.annotations[id]),
+          hasAnnotation: this.itemHasInstruction(id),
         };
       }),
     );
@@ -536,7 +635,7 @@ export class SelectorContentApp {
 
   private positionAllOverlays(): void {
     const state = this.controller.snapshot();
-    this.overlays.positionAll(state.selectedIds, (id) => Boolean(state.annotations[id]));
+    this.overlays.positionAll(state.selectedIds, (id) => this.itemHasInstruction(id), this.overlayViz());
   }
 
   private hasSelections(): boolean {
@@ -548,32 +647,22 @@ export class SelectorContentApp {
     this.dragState = null;
   }
 
-  private showAnnotation(id: ElementId, button: HTMLButtonElement): void {
-    this.popover.show({
-      id,
-      anchor: button,
-      value: this.controller.getAnnotation(id),
-      onSave: (value) => {
-        saveAnnotation(this.controller, id, value);
-        this.dispatchSession({
-          type: "draft_set_text",
-          scope: "per_item",
-          elementId: id,
-          text: value,
-          atMs: Date.now(),
-        });
-        this.render();
-      },
-      onClear: () => {
-        clearSelectionAnnotation(this.controller, id);
-        this.dispatchSession({
-          type: "draft_clear",
-          scope: "per_item",
-          elementId: id,
-          atMs: Date.now(),
-        });
-        this.render();
-      },
-    });
+  private handleInstructionEditRequest(req: InstructionEditRequest): void {
+    this.disarmRemoveUi();
+    if (req.kind === "whole_union") {
+      this.dispatchSession({ type: "open_whole_set_instruction_badge", atMs: Date.now() });
+      this.render();
+      return;
+    }
+    if (this.session.selectionCount >= 2 && this.session.wholeSetFlow !== "whole_done") {
+      this.panel?.showCopyFeedback("请先完成对当前选取的说明");
+      return;
+    }
+    const snap = this.controller.snapshot();
+    if (snap.selectedIds.length > 1 && this.session.focusElementId !== req.id) {
+      this.dispatchSession({ type: "focus_change", focusElementId: req.id });
+    }
+    this.dispatchSession({ type: "open_instruction_via_edit_badge", atMs: Date.now() });
+    this.render();
   }
 }

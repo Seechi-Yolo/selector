@@ -23,16 +23,16 @@ Open any web page and click the **Selector** extension action. You can also use 
 |---|---|
 | **Click** | Select an element |
 | **Shift + Click** | Add to selection |
-| **Drag** | Marquee select multiple elements |
+| **Drag** | Marquee (range) select multiple elements |
 | **↑ / ↓** | Navigate to parent / child element |
 | **← / →** | Navigate to previous / next sibling |
-| **✎ button** | Add per-element instruction |
-| **⌘/Ctrl + C** | Copy prompt to clipboard |
-| **⌘/Ctrl + Z** | Undo last selection change |
-| **Space** | Pause / resume selecting |
-| **Esc** | Clear selection |
+| **Edit instruction** (on-page control) | Open the instruction surface: per-item **修改说明**, or selection-level **对当前选取的说明** when multi-select requires it |
+| **⌘/Ctrl + C** | Copy the composed **复制提示词** to the clipboard (same text as auto-sync) |
+| **⌘/Ctrl + Z** | Undo the last selection / annotation change |
+| **Space** | Pause / resume picking |
+| **Esc** | Close instruction first when open; otherwise clear selection (see PRD D-11 in-repo) |
 
-The copied prompt includes element metadata (tag, selector, text, React component info) plus any per-element instructions you added.
+The composed **复制提示词** includes page path, element metadata (tag, selector, text, React component info where available), optional **对当前选取的说明**, and per-element **修改说明** where present. Changes debounce-auto-copy to the clipboard when there is writable content.
 
 ## Example output
 

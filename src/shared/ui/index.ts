@@ -1,2 +1,6 @@
 export { AnnotationPopover } from "./annotation-popover";
-export { SelectionOverlays } from "./selection-overlays";
+export {
+  SelectionOverlays,
+  type InstructionEditRequest,
+  type SelectionOverlayViz,
+} from "./selection-overlays";

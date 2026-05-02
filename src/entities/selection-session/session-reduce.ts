@@ -285,6 +285,22 @@ export function reduceSelectionSession(
       };
       return { state: next, clipboard: clip, effects };
     }
+    case "open_whole_set_instruction_badge": {
+      if (next.selectionCount < 2) {
+        return { state: next, clipboard: clip, effects };
+      }
+      if (next.wholeSetFlow !== "whole_required" && next.wholeSetFlow !== "whole_done") {
+        return { state: next, clipboard: clip, effects };
+      }
+      next = {
+        ...next,
+        instructionOpen: true,
+        activeLayer: "whole_set",
+        escClearGate: "none",
+        escGateSetAtMs: null,
+      };
+      return { state: next, clipboard: clip, effects };
+    }
     case "instruction_surface_close": {
       if (!next.instructionOpen) {
         return { state: next, clipboard: clip, effects };
@@ -353,6 +369,36 @@ export function reduceSelectionSession(
         if (!id) return { state: next, clipboard: clip, effects };
         next = { ...next, drafts: clearPerItemDraft(next.drafts, id) };
       }
+      const m = mergeClipboard(state, next, clip, event.atMs);
+      clip = m.clipboard;
+      effects.push(...m.effects);
+      return { state: next, clipboard: clip, effects };
+    }
+    case "sync_session_after_undo": {
+      const preservedPicking = next.picking;
+      if (event.count === 0) {
+        next = { ...initialSelectionSessionState(), picking: preservedPicking };
+        const m = mergeClipboard(state, next, clip, event.atMs);
+        clip = m.clipboard;
+        effects.push(...m.effects);
+        return { state: next, clipboard: clip, effects };
+      }
+      next = {
+        ...next,
+        picking: preservedPicking,
+        selectionCount: event.count,
+        focusElementId: event.focusElementId,
+        formation: { kind: "idle" },
+        instructionOpen: false,
+        activeLayer: event.count >= 2 ? "whole_set" : "per_item",
+        wholeSetFlow: event.count >= 2 ? "whole_required" : "idle",
+        escClearGate: "none",
+        escGateSetAtMs: null,
+        drafts: {
+          selectionLevelBody: event.selectionLevelBody,
+          perItemBodies: { ...event.perItemBodies },
+        },
+      };
       const m = mergeClipboard(state, next, clip, event.atMs);
       clip = m.clipboard;
       effects.push(...m.effects);

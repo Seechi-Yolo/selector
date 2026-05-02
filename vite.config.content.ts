@@ -7,7 +7,8 @@ export default defineConfig({
   plugins: [react()],
   build: {
     emptyOutDir: false,
-    minify: false,
+    /** 本地排查时可设 `SELECTOR_CONTENT_NO_MINIFY=1 npm run build` 关闭压缩 */
+    minify: process.env.SELECTOR_CONTENT_NO_MINIFY === "1" ? false : "esbuild",
     outDir: "dist",
     rollupOptions: {
       input: {

@@ -10,14 +10,14 @@ export function initialClipboardWriteIntent(): ClipboardWriteIntent {
 }
 
 /**
- * 与 `buildPromptText` 对齐的底线：有已选项即视为可拼装非空主内容（元素元数据由宿主读 DOM 填充）。
- * 「仅有草稿无选取」不写；「有选取」即使尚无说明正文也允许 D-08 排程（复制体由装配层决定）。
+ * 领域层粗判：有已选项才值得在变更后尝试 D-08 防抖。
+ * 宿主在真正写入前仍须用 `wouldCopyPromptProduceText`（与 `buildPromptText` 一致）过滤空串。
  */
 export function hasWritableComposedPrompt(state: SelectionSessionState): boolean {
   return state.selectionCount > 0;
 }
 
-/** D-08 +「无可写内容不写」：仅在有可写正文时排程 */
+/** D-08：有选取即排程；flush 时由宿主判断是否产生非空正文 */
 export function scheduleClipboardAfterPromptChange(
   _intent: ClipboardWriteIntent,
   nextState: SelectionSessionState,
