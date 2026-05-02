@@ -23,8 +23,8 @@ export interface SelectionPanelPresentation {
   layout: {
     /** PRD D-03：上已选内容、下操作引导 */
     stacking: "selected_content_then_operational_guidance";
-    /** PRD D-16 仅表达比例意图，像素由宿主/CSS 实现 */
-    sizeIntent: { heightScale: 2; widthScale: 1.5 };
+    /** PRD D-16 仅表达比例意图（相对旧「2× / 1.5×」基准），像素由宿主/CSS 实现 */
+    sizeIntent: { heightScale: number; widthScale: number };
   };
   picking: Picking;
   selectionOverlaySemantic: SelectionOverlaySemantic;

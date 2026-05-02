@@ -1,8 +1,8 @@
-/* PRD D-16：相对旧版约 1.5× 宽、2× 高（基准约 300×300 → 450×600） */
+/* PRD D-16 / D-27：极小面板（约为上一实现版约 1/2 量级） */
 .sel-volt.sel-session-panel {
-  width: min(450px, calc(100vw - 32px));
-  min-height: 600px;
-  max-height: min(78vh, 720px);
+  width: min(168px, calc(100vw - 24px));
+  min-height: 108px;
+  max-height: min(40vh, 360px);
   display: flex;
   flex-direction: column;
   background: var(--sel-carbon);
@@ -13,16 +13,16 @@
     rgba(92, 88, 85, 0.18) 0 0 18px,
     rgba(0, 0, 0, 0.55) 0 18px 48px;
   font-family: var(--sel-font-ui);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 11px;
+  line-height: 1.4;
   overflow: hidden;
 }
 
 .sel-session-drag {
   display: flex;
   align-items: center;
-  gap: var(--sel-space-2);
-  padding: var(--sel-space-2) var(--sel-space-3);
+  gap: 6px;
+  padding: 5px 8px;
   border-bottom: 1px solid var(--sel-border);
   background: linear-gradient(180deg, rgba(0, 217, 146, 0.06), transparent);
   cursor: grab;
@@ -42,8 +42,8 @@
 }
 
 .sel-session-dot {
-  width: 7px;
-  height: 7px;
+  width: 5px;
+  height: 5px;
   border-radius: 999px;
   background: var(--sel-emerald-soft);
   flex-shrink: 0;
@@ -54,7 +54,7 @@
 }
 
 .sel-session-status {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.04em;
   color: var(--sel-parchment);
@@ -66,13 +66,14 @@
   flex-shrink: 0;
 }
 
+/* D-25：头部 icon 小尺寸 */
 .sel-session-icon-btn {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border: none;
   border-radius: var(--sel-radius-control);
   background: transparent;
-  color: var(--sel-slate);
+  color: rgba(168, 162, 158, 0.95);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -92,76 +93,109 @@
   flex-direction: column;
 }
 
-/* D-03：上已选内容 */
-.sel-session-selected {
-  padding: var(--sel-space-3);
+/* D-26：Tab 条 */
+.sel-session-tabs {
+  display: flex;
+  flex-shrink: 0;
   border-bottom: 1px solid var(--sel-border);
-  flex: 1 1 58%;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.sel-session-tab {
+  flex: 1 1 0;
+  border: none;
+  background: transparent;
+  color: var(--sel-slate);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 6px 4px;
+  cursor: pointer;
+  transition:
+    color 120ms,
+    background 120ms;
+}
+
+.sel-session-tab:hover {
+  color: var(--sel-parchment);
+}
+
+.sel-session-tab--active {
+  color: var(--sel-mint);
+  background: rgba(0, 217, 146, 0.08);
+  box-shadow: inset 0 -2px 0 rgba(0, 217, 146, 0.55);
+}
+
+.sel-session-selected-stack {
+  flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-}
-
-.sel-session-selected-head {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--sel-slate);
-  margin-bottom: var(--sel-space-2);
-}
-
-.sel-session-tags {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-direction: column;
+}
+
+.sel-session-selected {
+  padding: 6px 8px 8px;
+  flex: 0 0 auto;
+}
+
+.sel-session-tag-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.sel-session-tag-row {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.sel-session-tag-row--list-only {
+  justify-content: flex-start;
 }
 
 .sel-session-empty-hint {
-  margin: 0 0 var(--sel-space-2);
-  font-size: 12px;
+  margin: 0;
+  font-size: 10px;
   color: var(--sel-slate);
 }
 
-.sel-session-tags[data-empty="1"] {
+.sel-session-tag-rows[data-empty="1"] {
   display: none;
 }
 
 .sel-session-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 8px 4px 6px;
+  gap: 4px;
+  padding: 3px 6px 3px 5px;
   border-radius: 999px;
   border: 1px solid var(--sel-border);
   background: rgba(255, 255, 255, 0.03);
+  min-width: 0;
+  flex: 1 1 auto;
   max-width: 100%;
 }
 
 .sel-session-tag-num {
   font-family: var(--sel-font-mono);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: var(--sel-mint);
 }
 
 .sel-session-tag-label {
-  font-size: 12px;
+  font-size: 10px;
   color: var(--sel-snow);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 220px;
-}
-
-.sel-session-tag-x {
-  border: none;
-  background: transparent;
-  color: var(--sel-slate);
-  cursor: pointer;
-  font-size: 13px;
-  line-height: 1;
-  padding: 0 2px;
+  max-width: 118px;
 }
 
 .sel-session-tag--focus {
@@ -169,155 +203,27 @@
   box-shadow: 0 0 0 1px rgba(0, 217, 146, 0.12);
 }
 
-/* D-05：悬停强化（title 已含「点击移除操作」） */
-.sel-session-tag-x:hover {
-  color: var(--sel-snow);
-  outline: 1px solid rgba(0, 217, 146, 0.35);
-  outline-offset: 1px;
-}
-
-/* D-21 第一次点击后待确认的轻微提示（D-05 微动效） */
-.sel-session-tag-x--pending {
-  animation: sel-remove-pending 1.1s ease-in-out infinite;
-  color: var(--sel-mint);
-}
-
-@keyframes sel-remove-pending {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.12);
-    opacity: 0.85;
-  }
-}
-
-.sel-session-tag-x:active {
-  transform: scale(0.96);
-}
-
-.sel-session-clear {
-  margin-left: auto;
-  border: 1px solid var(--sel-border);
-  background: transparent;
-  color: var(--sel-parchment);
-  border-radius: var(--sel-radius-control);
-  font-size: 11px;
-  padding: 4px 8px;
-  cursor: pointer;
-}
-
-.sel-session-clear:hover {
-  color: var(--sel-snow);
-  border-color: rgba(0, 217, 146, 0.35);
-}
-
-/* D-13 / D-18：说明面板 */
-.sel-session-instruction {
-  flex: 0 0 auto;
-  padding: var(--sel-space-3);
-  border-bottom: 1px solid var(--sel-border);
-  background: rgba(0, 0, 0, 0.12);
-}
-
-.sel-session-instruction-head {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--sel-mint);
-  margin-bottom: 4px;
-}
-
-.sel-session-instruction-sub {
-  margin: 0 0 var(--sel-space-2);
-  font-size: 11px;
-  color: var(--sel-slate);
-  line-height: 1.4;
-}
-
-.sel-session-instruction-input {
-  width: 100%;
-  min-height: 88px;
-  border: 1px solid var(--sel-border);
-  border-radius: var(--sel-radius-control);
-  padding: 8px 10px;
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--sel-snow);
-  background: rgba(0, 0, 0, 0.2);
-  resize: vertical;
-  outline: none;
-  font-family: inherit;
-}
-
-.sel-session-instruction-input:focus {
-  border-color: rgba(0, 217, 146, 0.45);
-}
-
-.sel-session-instruction-input::placeholder {
-  color: var(--sel-slate);
-}
-
-.sel-session-instruction-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: var(--sel-space-2);
-}
-
-.sel-session-btn {
-  border-radius: var(--sel-radius-control);
-  font-size: 12px;
-  padding: 6px 12px;
-  cursor: pointer;
-  border: 1px solid transparent;
-}
-
-.sel-session-btn--primary {
-  background: rgba(0, 217, 146, 0.2);
-  border-color: rgba(0, 217, 146, 0.45);
-  color: var(--sel-snow);
-}
-
-.sel-session-btn--primary:hover {
-  background: rgba(0, 217, 146, 0.28);
-}
-
-.sel-session-btn--ghost {
-  background: transparent;
-  border-color: var(--sel-border);
-  color: var(--sel-parchment);
-}
-
-.sel-session-btn--ghost:hover {
-  color: var(--sel-snow);
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-/* D-03：下操作引导 */
 .sel-session-guidance {
-  flex: 0 0 auto;
-  padding: var(--sel-space-3);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 6px 8px 8px;
   background: var(--sel-abyss);
-  border-top: 1px solid rgba(61, 58, 57, 0.65);
 }
 
 .sel-session-guidance-primary {
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 500;
   color: var(--sel-snow);
-  margin: 0 0 var(--sel-space-2);
+  margin: 0 0 4px;
 }
 
 .sel-session-guidance-secondary {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  gap: 6px;
-  font-size: 10px;
+  gap: 3px;
+  font-size: 8px;
   font-weight: 400;
   color: rgba(168, 162, 158, 0.92);
 }
@@ -329,17 +235,17 @@
 
 .sel-session-kbd {
   font-family: var(--sel-font-mono);
-  font-size: 10px;
-  padding: 2px 5px;
-  border-radius: 4px;
+  font-size: 8px;
+  padding: 1px 4px;
+  border-radius: 3px;
   border: 1px solid var(--sel-border);
   color: var(--sel-parchment);
   background: rgba(255, 255, 255, 0.04);
 }
 
 .sel-session-toast {
-  margin-top: var(--sel-space-2);
-  font-size: 11px;
+  margin-top: 6px;
+  font-size: 9px;
   color: var(--sel-mint);
 }
 

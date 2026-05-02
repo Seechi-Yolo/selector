@@ -42,7 +42,7 @@ export function mapSelectionSessionToPresentation(input: {
   return {
     layout: {
       stacking: "selected_content_then_operational_guidance",
-      sizeIntent: { heightScale: 2, widthScale: 1.5 },
+      sizeIntent: { heightScale: 0.45, widthScale: 0.45 },
     },
     picking: session.picking,
     selectionOverlaySemantic: mapOverlaySemantic(session),

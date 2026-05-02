@@ -729,3 +729,57 @@
   width: 100%;
   max-width: 320px;
 }
+
+/* D-22：选取框正下方说明输入浮动层 */
+.ai-editor-instruction-dock {
+  position: fixed;
+  z-index: 2147483646;
+  padding: 10px 12px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  background: rgba(22, 22, 24, 0.96);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.4),
+    0 12px 32px rgba(0, 0, 0, 0.45);
+  user-select: text;
+}
+
+.ai-editor-instruction-dock-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(74, 222, 128, 0.95);
+  margin-bottom: 4px;
+}
+
+.ai-editor-instruction-dock-sub {
+  margin: 0 0 8px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: rgba(180, 175, 170, 0.95);
+}
+
+.ai-editor-instruction-dock-input {
+  width: 100%;
+  min-height: 72px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #f4f4f5;
+  background: rgba(0, 0, 0, 0.35);
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+}
+
+.ai-editor-instruction-dock-input:focus {
+  border-color: rgba(74, 222, 128, 0.55);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.ai-editor-instruction-dock-input::placeholder {
+  color: rgba(160, 155, 150, 0.75);
+}

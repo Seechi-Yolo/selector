@@ -5,11 +5,10 @@ import { tryMountTutorialIntro, type EditorOnboarding } from "../../features/edi
 import { SelectionController } from "../../features/select-elements";
 import {
   FORMATION_QUIET_MS,
-  applyRemoveClick,
   createSessionReduceSeed,
-  disarmRemove,
-  initialRemoveArm,
   reduceSelectionSession,
+  unionBounds,
+  type AxisRect,
   type ClipboardWriteIntent,
   type SessionEvent,
   type SelectionSessionState,
@@ -24,6 +23,7 @@ import {
   elementLabel,
   isEditorElement,
   isExtensionUiSurface,
+  isHostNativeEditableSurface,
   isMeaningful,
   isVisible,
   meaningfulElements,
@@ -31,7 +31,13 @@ import {
 } from "../../shared/dom/page-elements";
 import { EditorChromeTheme } from "../../shared/editor-chrome";
 import { NS } from "../../shared/dom/constants";
-import { SelectionOverlays, type InstructionEditRequest, type SelectionOverlayViz } from "../../shared/ui";
+import {
+  InstructionCanvasDock,
+  SelectionOverlays,
+  type InstructionEditRequest,
+  type InstructionCanvasDockLayer,
+  type SelectionOverlayViz,
+} from "../../shared/ui";
 
 interface ListenerRecord {
   target: EventTarget;
@@ -63,15 +69,67 @@ export class SelectorContentApp {
 
   private session: SelectionSessionState;
   private clipboardIntent: ClipboardWriteIntent;
-  private removeArm = initialRemoveArm();
   private shiftQuietTimer: number | null = null;
   private clipboardFlushTimer: number | null = null;
   private pauseScrim: HTMLDivElement | null = null;
+  private instructionDock: InstructionCanvasDock;
+  /** D-23：在扩展 UI 外 pointerdown 关闭说明层后，忽略紧随的 click，避免误改选区 */
+  private suppressNextClickSelection = false;
 
   constructor() {
     const seed = createSessionReduceSeed();
     this.session = seed.state;
     this.clipboardIntent = seed.clipboard;
+
+    this.instructionDock = new InstructionCanvasDock({
+      onDraftChange: (value) => {
+        if (this.session.activeLayer === "whole_set") {
+          this.dispatchSession({ type: "draft_set_text", scope: "whole_set", text: value, atMs: Date.now() });
+        } else {
+          const snap = this.controller.snapshot();
+          const fid =
+            this.session.focusElementId ?? (snap.selectedIds.length === 1 ? snap.selectedIds[0]! : null);
+          if (fid) {
+            saveAnnotation(this.controller, fid, value);
+            this.dispatchSession({
+              type: "draft_set_text",
+              scope: "per_item",
+              elementId: fid,
+              text: value,
+              atMs: Date.now(),
+            });
+          }
+        }
+        this.render();
+      },
+      onEnterComplete: () => {
+        if (this.session.activeLayer === "whole_set" && this.session.wholeSetFlow === "whole_required") {
+          this.dispatchSession({ type: "finalize_whole_set_instruction" });
+        } else {
+          this.dispatchSession({ type: "instruction_surface_close", atMs: Date.now() });
+        }
+        this.render();
+      },
+      onCtrlDeleteClear: () => {
+        if (this.session.activeLayer === "whole_set") {
+          this.dispatchSession({ type: "draft_clear", scope: "whole_set", atMs: Date.now() });
+        } else {
+          const snap = this.controller.snapshot();
+          const fid =
+            this.session.focusElementId ?? (snap.selectedIds.length === 1 ? snap.selectedIds[0]! : null);
+          if (fid) {
+            clearSelectionAnnotation(this.controller, fid);
+            this.dispatchSession({
+              type: "draft_clear",
+              scope: "per_item",
+              elementId: fid,
+              atMs: Date.now(),
+            });
+          }
+        }
+        this.render();
+      },
+    });
   }
 
   init(): void {
@@ -84,59 +142,11 @@ export class SelectorContentApp {
     this.panel = new EditorPanel({
       onCopy: () => void this.copySelectionPrompt(),
       onClose: () => this.destroy(),
-      onRemove: (id) => this.handleRemoveClick(id),
-      onClear: () => {
-        this.controller.remember();
-        this.controller.clear();
-        this.removeArm = initialRemoveArm();
-        this.panel?.setRemoveArmedTag(null);
-        this.clearShiftQuietTimer();
-        this.dispatchSession({ type: "clear_selection", atMs: Date.now() });
-        this.render();
-      },
       onMinimizeChange: () => this.overlays.showHover(null, (id) => this.controller.hasSelection(id)),
       onTagFocusRequest: (tagId) => {
         if (this.session.selectionCount <= 1) return;
         if (this.session.focusElementId === tagId) return;
-        this.disarmRemoveUi();
         this.dispatchSession({ type: "focus_change", focusElementId: tagId });
-        this.render();
-      },
-      onInstructionSurfaceClose: () => {
-        this.dispatchSession({ type: "instruction_surface_close", atMs: Date.now() });
-        this.render();
-      },
-      onFinalizeWholeSetInstruction: () => {
-        this.dispatchSession({ type: "finalize_whole_set_instruction" });
-        this.render();
-      },
-      onWholeSetDraftChange: (text) => {
-        this.dispatchSession({ type: "draft_set_text", scope: "whole_set", text, atMs: Date.now() });
-        this.render();
-      },
-      onWholeSetDraftClear: () => {
-        this.dispatchSession({ type: "draft_clear", scope: "whole_set", atMs: Date.now() });
-        this.render();
-      },
-      onPerItemDraftChange: (elementId, text) => {
-        saveAnnotation(this.controller, elementId, text);
-        this.dispatchSession({
-          type: "draft_set_text",
-          scope: "per_item",
-          elementId,
-          text,
-          atMs: Date.now(),
-        });
-        this.render();
-      },
-      onPerItemDraftClear: (elementId) => {
-        clearSelectionAnnotation(this.controller, elementId);
-        this.dispatchSession({
-          type: "draft_clear",
-          scope: "per_item",
-          elementId,
-          atMs: Date.now(),
-        });
         this.render();
       },
     });
@@ -184,6 +194,7 @@ export class SelectorContentApp {
     this.onboarding = null;
     this.pauseScrim?.remove();
     this.pauseScrim = null;
+    this.instructionDock.destroy();
     this.panel?.destroy();
     this.panel = null;
     EditorChromeTheme.remove();
@@ -213,11 +224,6 @@ export class SelectorContentApp {
         this.scheduleClipboardFlush(eff.flushAtMs);
       }
     }
-  }
-
-  private disarmRemoveUi(): void {
-    this.removeArm = disarmRemove(this.removeArm);
-    this.panel?.setRemoveArmedTag(null);
   }
 
   private clearShiftQuietTimer(): void {
@@ -313,17 +319,8 @@ export class SelectorContentApp {
     }, FORMATION_QUIET_MS);
   }
 
-  private handleRemoveClick(id: ElementId): void {
+  private executeRemoveItem(id: ElementId): void {
     const now = Date.now();
-    const out = applyRemoveClick(this.removeArm, id, now);
-    this.removeArm = out.next;
-    if (!out.executeRemove) {
-      this.panel?.setRemoveArmedTag(out.next.targetId);
-      this.panel?.showCopyFeedback("再次点击以移除此项");
-      return;
-    }
-    this.panel?.setRemoveArmedTag(null);
-    this.removeArm = initialRemoveArm();
     this.controller.remember();
     this.controller.remove(id);
     const snap = this.controller.snapshot();
@@ -334,6 +331,24 @@ export class SelectorContentApp {
     } else {
       this.dispatchSession({ type: "selection_pruned", count: n, focusElementId: focus, atMs: now });
     }
+    this.render();
+  }
+
+  private removeFocusedItemFromSelection(): void {
+    const snap = this.controller.snapshot();
+    if (snap.selectedIds.length === 0) return;
+    const focus =
+      this.session.focusElementId ?? snap.selectedIds[snap.selectedIds.length - 1] ?? null;
+    if (!focus || !snap.selectedIds.includes(focus)) return;
+    this.executeRemoveItem(focus);
+  }
+
+  private clearEntireSelection(): void {
+    const now = Date.now();
+    this.controller.remember();
+    this.controller.clear();
+    this.clearShiftQuietTimer();
+    this.dispatchSession({ type: "clear_selection", atMs: now });
     this.render();
   }
 
@@ -379,6 +394,18 @@ export class SelectorContentApp {
   }
 
   private handleMouseDown(event: MouseEvent): void {
+    if (
+      this.session.instructionOpen &&
+      event.button === 0 &&
+      !isExtensionUiSurface(event.target)
+    ) {
+      this.suppressNextClickSelection = true;
+      this.dispatchSession({ type: "instruction_surface_close", atMs: Date.now() });
+      this.render();
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     if (isExtensionUiSurface(event.target)) return;
     if (this.panel?.isMinimized || this.isPaused()) return;
     if (event.button !== 0) return;
@@ -403,7 +430,6 @@ export class SelectorContentApp {
     const marqueeRect = this.dragState.marquee.getBoundingClientRect();
     this.cancelDrag();
 
-    this.disarmRemoveUi();
     this.controller.remember();
     if (!event.shiftKey) this.controller.clear();
 
@@ -430,6 +456,12 @@ export class SelectorContentApp {
 
   private handleClick(event: MouseEvent): void {
     if (isExtensionUiSurface(event.target)) return;
+    if (this.suppressNextClickSelection) {
+      this.suppressNextClickSelection = false;
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     if (this.panel?.isMinimized || this.isPaused()) return;
     if (this.wasJustDragging) return;
 
@@ -440,7 +472,6 @@ export class SelectorContentApp {
     const target = resolveTarget(event.target);
     if (!target) return;
 
-    this.disarmRemoveUi();
     this.controller.remember();
     const id = elementId(target);
     const at = Date.now();
@@ -466,18 +497,7 @@ export class SelectorContentApp {
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
-    if (
-      isExtensionUiSurface(event.target) &&
-      event.target instanceof HTMLElement &&
-      ["INPUT", "TEXTAREA"].includes(event.target.tagName)
-    ) {
-      return;
-    }
-
-    const mod = event.metaKey || event.ctrlKey;
-
     if (event.key === "Escape") {
-      this.disarmRemoveUi();
       const out = reduceSelectionSession(this.session, this.clipboardIntent, { type: "esc", atMs: Date.now() });
       this.session = out.state;
       this.clipboardIntent = out.clipboard;
@@ -488,13 +508,21 @@ export class SelectorContentApp {
         if (eff.type === "selection_cleared") {
           this.controller.remember();
           this.controller.clear();
-          this.removeArm = initialRemoveArm();
-          this.panel?.setRemoveArmedTag(null);
         }
       }
       this.render();
       return;
     }
+
+    if (
+      isExtensionUiSurface(event.target) &&
+      event.target instanceof HTMLElement &&
+      ["INPUT", "TEXTAREA"].includes(event.target.tagName)
+    ) {
+      return;
+    }
+
+    const mod = event.metaKey || event.ctrlKey;
 
     if (mod && event.key.toLowerCase() === "c" && !event.shiftKey && this.hasSelections()) {
       event.preventDefault();
@@ -505,7 +533,6 @@ export class SelectorContentApp {
     if (mod && event.key.toLowerCase() === "z" && !event.shiftKey) {
       event.preventDefault();
       if (this.controller.undo()) {
-        this.disarmRemoveUi();
         const snap = this.controller.snapshot();
         const n = snap.selectedIds.length;
         const at = Date.now();
@@ -528,6 +555,23 @@ export class SelectorContentApp {
         this.render();
       }
       return;
+    }
+
+    if (
+      !this.session.instructionOpen &&
+      this.hasSelections() &&
+      !isHostNativeEditableSurface(event.target)
+    ) {
+      if (mod && (event.key === "Delete" || event.key === "Backspace")) {
+        event.preventDefault();
+        this.clearEntireSelection();
+        return;
+      }
+      if (!mod && !event.shiftKey && (event.key === "Delete" || event.key === "Backspace")) {
+        event.preventDefault();
+        this.removeFocusedItemFromSelection();
+        return;
+      }
     }
 
     if (event.key === "ArrowUp") {
@@ -572,7 +616,6 @@ export class SelectorContentApp {
     const next = this.findNavigationTarget(current, direction);
     if (!next) return;
 
-    this.disarmRemoveUi();
     this.controller.remember();
     const nid = elementId(next);
     this.controller.selectOnly(nid);
@@ -636,6 +679,60 @@ export class SelectorContentApp {
     );
     this.panel?.setSessionState(this.session);
     this.syncPauseScrim();
+    this.syncInstructionDock();
+  }
+
+  private rectsForUnionIds(ids: readonly string[]): AxisRect[] {
+    const rects: AxisRect[] = [];
+    for (const id of ids) {
+      const el = byElementId(id);
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      rects.push({ minX: r.left, minY: r.top, maxX: r.right, maxY: r.bottom });
+    }
+    return rects;
+  }
+
+  private computeInstructionAnchorRect(
+    snap: ReturnType<SelectionController["snapshot"]>,
+  ): DOMRect | null {
+    if (!this.session.instructionOpen || snap.selectedIds.length === 0) return null;
+    if (this.session.activeLayer === "whole_set" && snap.selectedIds.length >= 2) {
+      const u = unionBounds(this.rectsForUnionIds(snap.selectedIds));
+      if (!u) return null;
+      return new DOMRect(u.minX, u.minY, u.maxX - u.minX, u.maxY - u.minY);
+    }
+    const focus =
+      this.session.focusElementId ?? snap.selectedIds[snap.selectedIds.length - 1] ?? null;
+    const el = focus ? byElementId(focus) : null;
+    return el?.getBoundingClientRect() ?? null;
+  }
+
+  private syncInstructionDock(): void {
+    const snap = this.controller.snapshot();
+    const open = this.session.instructionOpen && snap.selectedIds.length > 0 && !this.isPaused();
+    const layer: InstructionCanvasDockLayer =
+      this.session.activeLayer === "whole_set" ? "whole_set" : "per_item";
+    const fid =
+      this.session.focusElementId ?? (snap.selectedIds.length === 1 ? snap.selectedIds[0]! : null);
+    const value =
+      this.session.activeLayer === "whole_set"
+        ? this.session.drafts.selectionLevelBody
+        : fid != null
+          ? (this.session.drafts.perItemBodies[fid] ?? "")
+          : "";
+    const subtitle =
+      this.session.activeLayer === "whole_set"
+        ? "作用于当前全部已选项（多选主框范围）。"
+        : "作用于当前焦点项（与列表高亮一致）。";
+    this.instructionDock.sync({
+      open,
+      paused: this.session.picking === "paused",
+      layer,
+      anchorRect: this.computeInstructionAnchorRect(snap),
+      value,
+      subtitle,
+    });
   }
 
   /** D-19：暂停且已选时加整页弱遮罩（描边已为灰；遮罩不拦截扩展 UI） */
@@ -658,6 +755,7 @@ export class SelectorContentApp {
   private positionAllOverlays(): void {
     const state = this.controller.snapshot();
     this.overlays.positionAll(state.selectedIds, (id) => this.itemHasInstruction(id), this.overlayViz());
+    this.syncInstructionDock();
   }
 
   private hasSelections(): boolean {
@@ -670,7 +768,6 @@ export class SelectorContentApp {
   }
 
   private handleInstructionEditRequest(req: InstructionEditRequest): void {
-    this.disarmRemoveUi();
     if (req.kind === "whole_union") {
       this.dispatchSession({ type: "open_whole_set_instruction_badge", atMs: Date.now() });
       this.render();

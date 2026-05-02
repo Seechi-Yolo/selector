@@ -14,16 +14,8 @@ interface EditorPanelCallbacks {
   /** 保留给快捷键复制；面板无常驻复制按钮（D-07） */
   onCopy(): void;
   onClose(): void;
-  onRemove(id: PanelTag["id"]): void;
-  onClear(): void;
   onMinimizeChange(minimized: boolean): void;
   onTagFocusRequest(tagId: PanelTag["id"]): void;
-  onInstructionSurfaceClose(): void;
-  onFinalizeWholeSetInstruction(): void;
-  onWholeSetDraftChange(text: string): void;
-  onWholeSetDraftClear(): void;
-  onPerItemDraftChange(elementId: string, text: string): void;
-  onPerItemDraftClear(elementId: string): void;
 }
 
 export class EditorPanel {
@@ -40,7 +32,6 @@ export class EditorPanel {
   private copyTimer: number | null = null;
   private dragBound = false;
   private userHasManualCopiedOnce = false;
-  private removeArmedTagId: string | null = null;
 
   constructor(callbacks: EditorPanelCallbacks, options?: EditorPanelOptions) {
     this.callbacks = callbacks;
@@ -90,11 +81,6 @@ export class EditorPanel {
     this.commit();
   }
 
-  setRemoveArmedTag(tagId: string | null): void {
-    this.removeArmedTagId = tagId;
-    this.commit();
-  }
-
   renderTags(tags: PanelTag[]): void {
     this.tags = tags;
     this.commit();
@@ -132,18 +118,9 @@ export class EditorPanel {
         layout={this.layout}
         toastMessage={this.toastMessage}
         userHasManualCopiedOnce={this.userHasManualCopiedOnce}
-        removeArmedTagId={this.removeArmedTagId}
         onMinimize={() => this.toggleMinimize()}
         onClose={() => this.callbacks.onClose()}
-        onRemove={(id) => this.callbacks.onRemove(id)}
-        onClear={() => this.callbacks.onClear()}
         onTagFocusRequest={(id) => this.callbacks.onTagFocusRequest(id)}
-        onInstructionSurfaceClose={() => this.callbacks.onInstructionSurfaceClose()}
-        onFinalizeWholeSet={() => this.callbacks.onFinalizeWholeSetInstruction()}
-        onWholeSetDraftChange={(t) => this.callbacks.onWholeSetDraftChange(t)}
-        onWholeSetDraftClear={() => this.callbacks.onWholeSetDraftClear()}
-        onPerItemDraftChange={(id, t) => this.callbacks.onPerItemDraftChange(id, t)}
-        onPerItemDraftClear={(id) => this.callbacks.onPerItemDraftClear(id)}
       />,
     );
     requestAnimationFrame(() => this.ensureDragBinding());

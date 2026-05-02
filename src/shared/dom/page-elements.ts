@@ -20,6 +20,16 @@ export function isExtensionUiSurface(el: EventTarget | null): boolean {
   return Boolean(el.closest(`.${EMBEDDED_EDITOR_HOST_CLASS}`));
 }
 
+/** 宿主页面上原生可编辑控件（非扩展 UI），避免扩展快捷键抢走 Delete/Backspace */
+export function isHostNativeEditableSurface(el: EventTarget | null): boolean {
+  if (!(el instanceof HTMLElement)) return false;
+  if (isExtensionUiSurface(el)) return false;
+  const tag = el.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+  if (el.isContentEditable) return true;
+  return Boolean(el.closest(`input, textarea, select, [contenteditable="true"]`));
+}
+
 export function assignElementIds(root: Element): void {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
   let node: Node | null;
