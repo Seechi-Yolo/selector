@@ -1,5 +1,87 @@
 import { NS } from "../dom/constants";
 
+/** 左右与顶部贴边留白 */
+const EDGE_MARGIN = 10;
+/** 底部留白：兼顾不被裁切与尽量贴近可视区域底边 */
+const BOTTOM_MARGIN =10;
+const DOCK_GAP = 8;
+const DOCK_MIN_HEIGHT = 96;
+
+function layoutViewportHeightPx(): number {
+  const vv = window.visualViewport;
+  if (vv && vv.height > 0) {
+    return vv.height;
+  }
+  return window.innerHeight;
+}
+
+/** 根据当前盒高整体上移并收紧 maxHeight，使底边落在可视高度内 */
+function verticalClampDock(root: HTMLElement, vh: number): void {
+  const br = root.getBoundingClientRect();
+  let t = br.top;
+  const h = br.height;
+  if (br.bottom > vh - BOTTOM_MARGIN) {
+    t -= br.bottom - (vh - BOTTOM_MARGIN);
+  }
+  if (t < EDGE_MARGIN) {
+    t = EDGE_MARGIN;
+  }
+  if (t + h > vh - BOTTOM_MARGIN) {
+    t = Math.max(EDGE_MARGIN, vh - BOTTOM_MARGIN - h);
+  }
+  root.style.top = `${t}px`;
+  root.style.maxHeight = `${Math.max(DOCK_MIN_HEIGHT, vh - t - BOTTOM_MARGIN)}px`;
+}
+
+/** 将说明层限制在视口内：先锚在选取框下沿，再整体上移 / 限制 maxHeight；与选取框重叠时翻到选取框上方；二次测量避免 maxHeight 生效前算错高度 */
+function layoutInstructionDockInViewport(root: HTMLElement, anchor: DOMRect): void {
+  const vh = layoutViewportHeightPx();
+  const vw = window.innerWidth;
+  const maxW = Math.min(440, vw - 16, Math.max(200, anchor.width + 48));
+  let left = anchor.left + (anchor.width - maxW) / 2;
+  left = Math.max(EDGE_MARGIN, Math.min(left, vw - maxW - EDGE_MARGIN));
+
+  const spaceBelow = vh - anchor.bottom - DOCK_GAP - BOTTOM_MARGIN;
+  const spaceAbove = anchor.top - DOCK_GAP - EDGE_MARGIN;
+  let top: number;
+  let maxH: number;
+  if (spaceBelow < 100 && spaceAbove > spaceBelow + 24) {
+    const targetBlock = Math.min(280, Math.max(DOCK_MIN_HEIGHT, spaceAbove));
+    top = anchor.top - DOCK_GAP - targetBlock;
+    if (top < EDGE_MARGIN) {
+      top = EDGE_MARGIN;
+    }
+    maxH = Math.max(DOCK_MIN_HEIGHT, anchor.top - DOCK_GAP - top);
+    maxH = Math.min(maxH, vh - top - BOTTOM_MARGIN);
+  } else {
+    top = anchor.bottom + DOCK_GAP;
+    maxH = Math.max(DOCK_MIN_HEIGHT, vh - top - BOTTOM_MARGIN);
+  }
+
+  root.style.left = `${left}px`;
+  root.style.top = `${top}px`;
+  root.style.width = `${maxW}px`;
+  root.style.maxHeight = `${maxH}px`;
+  root.style.overflowY = "auto";
+  root.style.bottom = "auto";
+
+  requestAnimationFrame(() => {
+    verticalClampDock(root, vh);
+    const br2 = root.getBoundingClientRect();
+    const overlaps = br2.top < anchor.bottom - 4 && br2.bottom > anchor.top + 4;
+    if (overlaps && anchor.top > EDGE_MARGIN + 80) {
+      const h2 = br2.height;
+      const tAbove = Math.max(EDGE_MARGIN, anchor.top - DOCK_GAP - h2);
+      root.style.top = `${tAbove}px`;
+      root.style.maxHeight = `${Math.max(DOCK_MIN_HEIGHT, anchor.top - DOCK_GAP - tAbove)}px`;
+    }
+    const vh2 = layoutViewportHeightPx();
+    requestAnimationFrame(() => {
+      verticalClampDock(root, vh2);
+    });
+  });
+}
+
 export type InstructionCanvasDockLayer = "whole_set" | "per_item";
 
 export interface InstructionCanvasDockCallbacks {
@@ -37,14 +119,7 @@ export class InstructionCanvasDock {
 
     this.ensureDom();
     const r = params.anchorRect;
-    const maxW = Math.min(440, window.innerWidth - 16, Math.max(200, r.width + 48));
-    let left = r.left + (r.width - maxW) / 2;
-    left = Math.max(8, Math.min(left, window.innerWidth - maxW - 8));
-    const top = r.bottom + 8;
-
-    this.root!.style.left = `${left}px`;
-    this.root!.style.top = `${top}px`;
-    this.root!.style.width = `${maxW}px`;
+    layoutInstructionDockInViewport(this.root!, r);
 
     this.titleEl!.textContent = params.layer === "whole_set" ? "对当前选取的说明" : "修改说明";
 
@@ -137,6 +212,10 @@ export class InstructionCanvasDock {
   }
 
   private teardown(): void {
+    if (this.root) {
+      this.root.style.maxHeight = "";
+      this.root.style.overflowY = "";
+    }
     this.root?.remove();
     this.root = null;
     this.textarea = null;

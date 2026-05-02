@@ -16,6 +16,47 @@ export type SelectionEditBadgeCallbacks = {
   onUnionWholeBadge(): void;
 };
 
+const BADGE_VIEW_MARGIN = 6;
+const BADGE_GAP = 6;
+
+/** 将「编辑说明」角标限制在视口内：贴近锚点右下，不足则上移或左移 */
+function placeEditBadgeInViewport(btn: HTMLButtonElement, anchor: DOMRect, edgePad: number): void {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const prevVis = btn.style.visibility;
+  btn.style.visibility = "hidden";
+  btn.style.right = "auto";
+  btn.style.left = "0px";
+  btn.style.top = "0px";
+  const bw = Math.max(btn.offsetWidth, 56);
+  const bh = Math.max(btn.offsetHeight, 22);
+  btn.style.visibility = prevVis;
+
+  let left = anchor.right - bw;
+  let top = anchor.bottom + edgePad + BADGE_GAP;
+
+  if (left + bw > vw - BADGE_VIEW_MARGIN) {
+    left = vw - BADGE_VIEW_MARGIN - bw;
+  }
+  if (left < BADGE_VIEW_MARGIN) {
+    left = BADGE_VIEW_MARGIN;
+  }
+
+  if (top + bh > vh - BADGE_VIEW_MARGIN) {
+    top = anchor.top - bh - edgePad - 2;
+  }
+  if (top < BADGE_VIEW_MARGIN) {
+    top = BADGE_VIEW_MARGIN;
+  }
+  if (top + bh > vh - BADGE_VIEW_MARGIN) {
+    top = Math.max(BADGE_VIEW_MARGIN, vh - BADGE_VIEW_MARGIN - bh);
+  }
+
+  btn.style.left = `${left}px`;
+  btn.style.top = `${top}px`;
+  btn.style.right = "auto";
+}
+
 interface SelectionOverlay {
   box: HTMLDivElement;
   corners: HTMLDivElement[];
@@ -169,9 +210,8 @@ export class SelectionOverlays {
       !viz.paused && !viz.instructionOpen && viz.wholeSetFlow === "whole_required";
     btn.style.display = showUnionBadge ? "" : "none";
     if (showUnionBadge) {
-      btn.style.top = `${u.maxY + pad + 6}px`;
-      btn.style.left = "auto";
-      btn.style.right = `${window.innerWidth - u.maxX - pad}px`;
+      const anchor = new DOMRect(u.minX - pad, u.minY - pad, u.maxX - u.minX + pad * 2, u.maxY - u.minY + pad * 2);
+      placeEditBadgeInViewport(btn, anchor, pad);
     }
     btn.classList.toggle(`${NS}-sel-edit-badge--paused`, viz.paused);
 
@@ -264,9 +304,8 @@ export class SelectionOverlays {
 
     btn.style.display = showPerItemBadge ? "" : "none";
     if (showPerItemBadge) {
-      btn.style.top = `${rect.bottom + pad + 6}px`;
-      btn.style.left = "auto";
-      btn.style.right = `${window.innerWidth - rect.right - pad}px`;
+      const anchor = new DOMRect(rect.left - pad, rect.top - pad, rect.width + pad * 2, rect.height + pad * 2);
+      placeEditBadgeInViewport(btn, anchor, pad);
     }
     btn.classList.toggle(`${NS}-sel-edit-badge--paused`, viz.paused);
     btn.classList.toggle(`${NS}-sel-edit-badge--has-note`, hasAnnotation);
