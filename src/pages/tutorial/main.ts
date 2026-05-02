@@ -1,6 +1,7 @@
 import shellCss from "../_shell/extension-page-shell.css?raw";
 import { FULL_TUTORIAL_SECTIONS } from "./full-tutorial-sections";
 import { extensionAssetUrl } from "../../shared/extension/extension-asset-url";
+import { installSelectorExtensionPageActionListener } from "../../shared/extension/install-selector-extension-page-action-listener";
 
 function injectStyles(): void {
   const el = document.createElement("style");
@@ -128,4 +129,5 @@ function main(): void {
   document.body.appendChild(page);
 }
 
+installSelectorExtensionPageActionListener();
 main();

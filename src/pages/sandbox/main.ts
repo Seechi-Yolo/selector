@@ -1,5 +1,6 @@
 import shellCss from "../_shell/extension-page-shell.css?raw";
 import sandboxPageCss from "./sandbox-page.css?raw";
+import { installSelectorExtensionPageActionListener } from "../../shared/extension/install-selector-extension-page-action-listener";
 
 function injectStyles(): void {
   const el = document.createElement("style");
@@ -164,4 +165,5 @@ function greet(name) {
   document.body.appendChild(page);
 }
 
+installSelectorExtensionPageActionListener();
 main();

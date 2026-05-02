@@ -1,4 +1,8 @@
 import { HELP_HUB_HTML_PATH } from "../../shared/extension/extension-html-paths";
+import {
+  SELECTOR_EXTENSION_PAGE_OPEN_TYPE,
+  type SelectorExtensionPageOpenMessage,
+} from "../../shared/extension/selector-extension-page-message";
 
 const CONTENT_SCRIPT = "assets/content.js";
 const MENU_HELP_HUB_ID = "selector-context-help-hub";
@@ -8,22 +12,47 @@ function isOwnExtensionPageUrl(url: string | undefined): boolean {
   return url.startsWith(`chrome-extension://${chrome.runtime.id}/`);
 }
 
-/**
- * 普通网页只注入顶层 frame：若使用 `allFrames: true`，任一子 frame 注入失败会导致整次 API reject，
- * 主文档也不会挂上 Selector。扩展内页（含 Help Hub 内嵌 iframe）需注入所有 frame。
- */
-async function openSelector(tabId?: number, tabUrl?: string): Promise<void> {
-  if (tabId == null) return;
+function tabResolvedUrl(tab: chrome.tabs.Tab): string | undefined {
+  return tab.url ?? tab.pendingUrl;
+}
 
-  const allFrames = isOwnExtensionPageUrl(tabUrl);
-
+/** 仅向普通网页注入：顶层 frame；子 frame 失败会导致整次 reject，故不用 allFrames。 */
+async function tryInjectContentScript(tabId: number): Promise<boolean> {
   try {
     await chrome.scripting.executeScript({
-      target: allFrames ? { tabId, allFrames: true } : { tabId },
+      target: { tabId },
       files: [CONTENT_SCRIPT],
     });
+    return true;
   } catch {
-    /* 当前标签不可注入时 executeScript 会 reject，避免未处理的 Promise 打挂 SW */
+    return false;
+  }
+}
+
+function openSelectorOnExtensionPages(tabId: number): void {
+  const msg: SelectorExtensionPageOpenMessage = {
+    type: SELECTOR_EXTENSION_PAGE_OPEN_TYPE,
+    targetTabId: tabId,
+  };
+  /* MV3 SW 里 Promise 版 sendMessage 在「无接收端」时会 reject，未处理会拖垮后续 executeScript */
+  chrome.runtime.sendMessage(msg, () => {
+    void chrome.runtime.lastError;
+  });
+}
+
+async function activateSelectorForTab(tab: chrome.tabs.Tab): Promise<void> {
+  const tabId = tab.id;
+  if (tabId == null) return;
+
+  const resolvedUrl = tabResolvedUrl(tab);
+  if (isOwnExtensionPageUrl(resolvedUrl)) {
+    openSelectorOnExtensionPages(tabId);
+    return;
+  }
+
+  const injected = await tryInjectContentScript(tabId);
+  if (!injected) {
+    openSelectorOnExtensionPages(tabId);
   }
 }
 
@@ -54,7 +83,7 @@ chrome.contextMenus.onClicked.addListener((info) => {
 });
 
 chrome.action.onClicked.addListener((tab) => {
-  void openSelector(tab.id ?? undefined, tab.url);
+  void activateSelectorForTab(tab);
 });
 
 chrome.commands.onCommand.addListener((command) => {
@@ -62,6 +91,7 @@ chrome.commands.onCommand.addListener((command) => {
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
-    void openSelector(tab?.id, tab?.url);
+    if (tab == null) return;
+    void activateSelectorForTab(tab);
   });
 });
