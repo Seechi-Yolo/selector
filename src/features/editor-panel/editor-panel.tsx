@@ -101,7 +101,40 @@ export class EditorPanel {
     this.minimized = !this.minimized;
     this.syncOuterChrome();
     this.commit();
+    this.applyMinimizedDockLayout();
     this.callbacks.onMinimizeChange(this.minimized);
+  }
+
+  /** 浮动布局：最小化时整壳磁吸到视口右侧竖条；展开恢复右下默认位 */
+  private applyMinimizedDockLayout(): void {
+    if (this.layout !== "floating") return;
+    const dockRight = () => {
+      this.root.style.setProperty("position", "fixed");
+      this.root.style.setProperty("right", "6px");
+      this.root.style.setProperty("left", "auto");
+      this.root.style.setProperty("bottom", "auto");
+      this.root.style.removeProperty("transform");
+      this.root.style.setProperty("width", "auto");
+    };
+    if (this.minimized) {
+      dockRight();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const h = this.root.getBoundingClientRect().height || 100;
+          const y = Math.round((window.innerHeight - h) / 2);
+          const clamped = Math.max(40, Math.min(y, window.innerHeight - h - 40));
+          this.root.style.setProperty("top", `${clamped}px`);
+        });
+      });
+    } else {
+      this.root.style.removeProperty("transform");
+      this.root.style.removeProperty("top");
+      this.root.style.setProperty("position", "fixed");
+      this.root.style.setProperty("right", "20px");
+      this.root.style.setProperty("bottom", "20px");
+      this.root.style.setProperty("left", "auto");
+      this.root.style.removeProperty("width");
+    }
   }
 
   private syncOuterChrome(): void {
@@ -151,12 +184,21 @@ export class EditorPanel {
       startTop = rect.top;
 
       const move = (moveEvent: MouseEvent) => {
+        if (this.layout === "floating" && this.minimized) {
+          panel.style.top = `${startTop + moveEvent.clientY - startY}px`;
+          return;
+        }
         panel.style.left = `${startLeft + moveEvent.clientX - startX}px`;
         panel.style.top = `${startTop + moveEvent.clientY - startY}px`;
         panel.style.right = "auto";
         panel.style.bottom = "auto";
+        panel.style.removeProperty("transform");
       };
       const up = () => {
+        if (this.layout === "floating" && this.minimized) {
+          panel.style.setProperty("right", "6px");
+          panel.style.setProperty("left", "auto");
+        }
         document.removeEventListener("mousemove", move);
         document.removeEventListener("mouseup", up);
       };

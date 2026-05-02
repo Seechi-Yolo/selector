@@ -18,6 +18,21 @@ const ICON_EXPAND = (
   </svg>
 );
 
+const ICON_CLOSE = (
+  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden>
+    <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+/** 标题栏单键：左右尖角，切换「提示 / 当前选中」 */
+const ICON_TAB_SWAP = (
+  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden>
+    <path d="M5 2L2 6L5 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M7 2L10 6L7 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 function renderGuidanceSecondaryLine(s: SessionGuidanceSecondary): ReactNode {
   return (
     <span key={s.id} className="sel-session-guidance-secondary-line">
@@ -33,13 +48,6 @@ function renderGuidanceSecondaryLine(s: SessionGuidanceSecondary): ReactNode {
     </span>
   );
 }
-
-const ICON_CLOSE = (
-  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden>
-    <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
 
 export type SelectionSessionMainTab = "prompt" | "selected";
 
@@ -79,6 +87,10 @@ export function SelectionSessionPanel(props: SelectionSessionPanelProps) {
 
   const secondaryNodes: ReactNode[] = guidance.secondaries.map((s) => renderGuidanceSecondaryLine(s));
 
+  const cycleTab = () => {
+    setMainTab((t) => (t === "prompt" ? "selected" : "prompt"));
+  };
+
   return (
     <div className={rootClass}>
       <header className="sel-session-drag" data-sel-drag-handle>
@@ -87,6 +99,20 @@ export function SelectionSessionPanel(props: SelectionSessionPanelProps) {
           <span className="sel-session-status">{paused ? "已暂停选取" : "选取"}</span>
         </div>
         <div className="sel-session-actions">
+          {!props.minimized ? (
+            <button
+              type="button"
+              className="sel-session-icon-btn sel-session-tab-swap-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                cycleTab();
+              }}
+              title={mainTab === "prompt" ? "切换到当前选中" : "切换到提示"}
+              aria-label={mainTab === "prompt" ? "切换到当前选中" : "切换到提示"}
+            >
+              {ICON_TAB_SWAP}
+            </button>
+          ) : null}
           <button type="button" className="sel-session-icon-btn" onClick={props.onMinimize} title="最小化">
             {props.minimized ? ICON_EXPAND : ICON_MINIMIZE}
           </button>
@@ -97,27 +123,6 @@ export function SelectionSessionPanel(props: SelectionSessionPanelProps) {
       </header>
 
       <div className="sel-session-body">
-        <div className="sel-session-tabs" role="tablist" aria-label="主面板分区">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mainTab === "prompt"}
-            className={"sel-session-tab" + (mainTab === "prompt" ? " sel-session-tab--active" : "")}
-            onClick={() => setMainTab("prompt")}
-          >
-            提示
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mainTab === "selected"}
-            className={"sel-session-tab" + (mainTab === "selected" ? " sel-session-tab--active" : "")}
-            onClick={() => setMainTab("selected")}
-          >
-            当前选中
-          </button>
-        </div>
-
         {mainTab === "prompt" ? (
           <section className="sel-session-guidance" aria-label="操作引导">
             <p className="sel-session-guidance-primary">

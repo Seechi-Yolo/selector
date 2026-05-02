@@ -368,10 +368,17 @@
   background: rgba(0, 0, 0, 0.06);
 }
 
-/* ── Minimized state ─────────────────────────────────────── */
+/* ── Minimized state（与可交互主面板共用 class；沙箱见 :not） ───────── */
+.ai-editor-chat.ai-editor-minimized:not(.ai-editor-chat--sandbox) {
+  right: 6px !important;
+  left: auto !important;
+  bottom: auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+}
+
 .ai-editor-minimized {
   width: auto !important;
-  min-width: 130px;
 }
 
 .ai-editor-minimized .ai-editor-drag-handle {
@@ -760,6 +767,12 @@
   color: rgba(180, 175, 170, 0.95);
 }
 
+.ai-editor-instruction-dock-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .ai-editor-instruction-dock-input {
   width: 100%;
   min-height: 72px;
@@ -773,6 +786,14 @@
   resize: vertical;
   outline: none;
   font-family: inherit;
+}
+
+.ai-editor-instruction-dock-input-hint {
+  font-size: 10px;
+  line-height: 1.35;
+  color: rgba(160, 155, 150, 0.9);
+  padding: 0 2px;
+  user-select: none;
 }
 
 .ai-editor-instruction-dock-input:focus {

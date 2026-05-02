@@ -721,10 +721,7 @@ export class SelectorContentApp {
         : fid != null
           ? (this.session.drafts.perItemBodies[fid] ?? "")
           : "";
-    const subtitle =
-      this.session.activeLayer === "whole_set"
-        ? "作用于当前全部已选项（多选主框范围）。"
-        : "作用于当前焦点项（与列表高亮一致）。";
+    const subtitle = "";
     this.instructionDock.sync({
       open,
       paused: this.session.picking === "paused",

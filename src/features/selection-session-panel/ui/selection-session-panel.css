@@ -93,37 +93,9 @@
   flex-direction: column;
 }
 
-/* D-26：Tab 条 */
-.sel-session-tabs {
-  display: flex;
+/* D-26：标题栏单键切换视图（左右箭头） */
+.sel-session-tab-swap-btn {
   flex-shrink: 0;
-  border-bottom: 1px solid var(--sel-border);
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.sel-session-tab {
-  flex: 1 1 0;
-  border: none;
-  background: transparent;
-  color: var(--sel-slate);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  padding: 6px 4px;
-  cursor: pointer;
-  transition:
-    color 120ms,
-    background 120ms;
-}
-
-.sel-session-tab:hover {
-  color: var(--sel-parchment);
-}
-
-.sel-session-tab--active {
-  color: var(--sel-mint);
-  background: rgba(0, 217, 146, 0.08);
-  box-shadow: inset 0 -2px 0 rgba(0, 217, 146, 0.55);
 }
 
 .sel-session-selected-stack {
@@ -280,6 +252,39 @@
 
 .sel-session-minimized .sel-session-body {
   display: none;
+}
+
+/* 最小化：整面板缩为右侧竖条（与外层 .ai-editor-minimized 磁吸配合） */
+.sel-session-panel.sel-session-minimized {
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
+  min-height: 0;
+  max-height: none;
+  border-radius: 10px;
+}
+
+.sel-session-minimized .sel-session-drag {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 4px;
+  gap: 8px;
+  border-bottom: none;
+}
+
+.sel-session-minimized .sel-session-title {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sel-session-minimized .sel-session-status {
+  display: none;
+}
+
+.sel-session-minimized .sel-session-actions {
+  flex-direction: column;
+  gap: 4px;
 }
 
 .sel-session-panel--sandbox {

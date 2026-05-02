@@ -10,13 +10,14 @@ export interface InstructionCanvasDockCallbacks {
 
 /**
  * 画布选取框正下方的「修改说明 / 对当前选取的说明」输入层（PRD D-22、D-23）。
- * 根节点带 `.${NS}-root`，与主面板同属扩展 UI，避免页上点选误触。
+ * Enter 提交、换行等提示放在输入区内侧，主面板「提示」不再重复。
  */
 export class InstructionCanvasDock {
   private root: HTMLDivElement | null = null;
   private textarea: HTMLTextAreaElement | null = null;
   private subtitleEl: HTMLParagraphElement | null = null;
   private titleEl: HTMLDivElement | null = null;
+  private inputHintEl: HTMLDivElement | null = null;
   private lastLayer: InstructionCanvasDockLayer | null = null;
 
   constructor(private readonly callbacks: InstructionCanvasDockCallbacks) {}
@@ -46,15 +47,29 @@ export class InstructionCanvasDock {
     this.root!.style.width = `${maxW}px`;
 
     this.titleEl!.textContent = params.layer === "whole_set" ? "对当前选取的说明" : "修改说明";
-    this.subtitleEl!.textContent = params.subtitle;
+
+    const sub = params.subtitle.trim();
+    if (sub) {
+      this.subtitleEl!.textContent = sub;
+      this.subtitleEl!.style.display = "";
+    } else {
+      this.subtitleEl!.textContent = "";
+      this.subtitleEl!.style.display = "none";
+    }
 
     const layerChanged = this.lastLayer !== params.layer;
     this.lastLayer = params.layer;
     if (layerChanged || document.activeElement !== this.textarea) {
       this.textarea!.value = params.value;
     }
-    this.textarea!.placeholder =
-      params.layer === "whole_set" ? "输入对当前选取的说明…" : "输入修改说明…";
+    this.textarea!.placeholder = params.layer === "whole_set" ? "整段说明…" : "本项说明…";
+    this.textarea!.setAttribute(
+      "aria-label",
+      params.layer === "whole_set" ? "对当前选取的说明" : "修改说明",
+    );
+    if (this.inputHintEl) {
+      this.inputHintEl.textContent = "Enter 提交 · Shift+Enter 换行";
+    }
     if (layerChanged) {
       this.textarea!.focus();
     }
@@ -76,13 +91,16 @@ export class InstructionCanvasDock {
     const sub = document.createElement("p");
     sub.className = `${NS}-instruction-dock-sub`;
 
+    const fieldWrap = document.createElement("div");
+    fieldWrap.className = `${NS}-instruction-dock-field`;
+
     const ta = document.createElement("textarea");
     ta.className = `${NS}-instruction-dock-input`;
     ta.rows = 3;
-    ta.setAttribute(
-      "aria-label",
-      "说明正文：对当前选取的说明或逐项修改说明，详见操作引导中的快捷键说明。",
-    );
+
+    const inputHint = document.createElement("div");
+    inputHint.className = `${NS}-instruction-dock-input-hint`;
+    inputHint.textContent = "Enter 提交 · Shift+Enter 换行";
 
     ta.addEventListener("keydown", (event) => {
       if (event.key === "Enter" && !event.shiftKey) {
@@ -103,15 +121,18 @@ export class InstructionCanvasDock {
       this.callbacks.onDraftChange(ta.value);
     });
 
+    fieldWrap.appendChild(ta);
+    fieldWrap.appendChild(inputHint);
     root.appendChild(title);
     root.appendChild(sub);
-    root.appendChild(ta);
+    root.appendChild(fieldWrap);
     document.body.appendChild(root);
 
     this.root = root;
     this.titleEl = title;
     this.subtitleEl = sub;
     this.textarea = ta;
+    this.inputHintEl = inputHint;
     ta.focus();
   }
 
@@ -121,6 +142,7 @@ export class InstructionCanvasDock {
     this.textarea = null;
     this.titleEl = null;
     this.subtitleEl = null;
+    this.inputHintEl = null;
     this.lastLayer = null;
   }
 }

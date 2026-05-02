@@ -24,20 +24,12 @@ function sec(id: string, ...chunks: GuidanceChunk[]): SessionGuidanceSecondary {
 
 function lineClip(userHasManualCopiedOnce: boolean): SessionGuidanceSecondary | null {
   if (!clipboardAuxiliaryHintsVisible(userHasManualCopiedOnce)) return null;
-  return sec(
-    "clip",
-    T("已自动同步复制提示词；也可用 "),
-    K("⌘/Ctrl"),
-    T("+"),
-    K("C"),
-    T(" 再次复制同文。"),
-  );
+  return sec("clip", K("⌘/Ctrl+C"), T(" 可复制"));
 }
 
 /**
- * PRD D-09 / **D-24**：一主少辅；辅句随附录 A（E/H×A/P×N/O）变化。
- * D-15：复制相关辅句由 `userHasManualCopiedOnce` 控制。
- * D-22 / D-23：说明正文在画布选取框下编辑；Enter / Ctrl+Delete / 点外部等仅在主句概括。
+ * PRD D-09 / **D-24**：主句极短；辅句极少。
+ * 说明输入框内快捷键见画布浮动层（Enter / ⌘Ctrl+Delete 等），此处不重复。
  */
 export function guidanceFromSession(input: {
   session: SelectionSessionState;
@@ -49,26 +41,24 @@ export function guidanceFromSession(input: {
   if (selectionCount === 0) {
     if (picking === "paused") {
       return {
-        primaryText: "已暂停点选。按 Space 恢复后再在页上选取。",
+        primaryText: "Space 恢复后点选",
         primaryUseShiny: true,
-        secondaries: [sec("space", T("按 "), K("Space"), T(" 继续选取"))],
+        secondaries: [sec("space", K("Space"), T(" 继续"))],
       };
     }
     return {
-      primaryText: "在页面上点击要修改的元素，开始本次选取。",
+      primaryText: "点击页上加选",
       primaryUseShiny: true,
       secondaries: [],
     };
   }
 
   if (picking === "paused") {
-    const secondaries: SessionGuidanceSecondary[] = [sec("space", T("按 "), K("Space"), T(" 暂停 / 继续"))];
+    const secondaries: SessionGuidanceSecondary[] = [sec("space", K("Space"), T(" 暂停/继续"))];
     const clip = lineClip(userHasManualCopiedOnce);
     if (clip) secondaries.push(clip);
     return {
-      primaryText: instructionOpen
-        ? "已暂停；说明输入在选取框下方，Enter 提交、Ctrl+Delete 清空、点外部取消。"
-        : "已暂停；恢复后可继续点选与「编辑说明」。",
+      primaryText: instructionOpen ? "已暂停，输入在框下" : "已暂停",
       primaryUseShiny: false,
       secondaries,
     };
@@ -77,63 +67,35 @@ export function guidanceFromSession(input: {
   if (!instructionOpen) {
     const secondaries: SessionGuidanceSecondary[] = [];
     if (selectionCount >= 2 && wholeSetFlow === "whole_required") {
-      secondaries.push(sec("whole", T("多选须先完成整体说明（包络角标），再逐项。")));
+      secondaries.push(sec("whole", T("先点包络「编辑说明」整段")));
     } else if (selectionCount === 1) {
-      secondaries.push(sec("arrows", T("单选时可用 "), K("↑↓←→"), T(" 在结构中移动焦点。")));
+      secondaries.push(sec("arrows", K("↑↓←→"), T(" 移焦点")));
     }
-    secondaries.push(
-      sec(
-        "prune",
-        K("Delete"),
-        T(" / "),
-        K("Backspace"),
-        T(" 移除焦点项；"),
-        K("Ctrl+Delete"),
-        T(" / "),
-        K("⌘+Delete"),
-        T(" 清空整次选取。"),
-      ),
-    );
-    secondaries.push(sec("esc", T("按 "), K("Esc"), T(" 关说明或清空选取")));
+    secondaries.push(sec("prune", K("Del"), T(" 删项 · "), K("⌘/Ctrl+Del"), T(" 清光")));
+    secondaries.push(sec("esc", K("Esc"), T(" 退出/清空")));
     const clip = lineClip(userHasManualCopiedOnce);
     if (clip) secondaries.push(clip);
     return {
-      primaryText: "需要说明时点页上「编辑说明」；正文在选取框正下方输入。",
+      primaryText: "角标开说明",
       primaryUseShiny: false,
       secondaries,
     };
   }
 
-  const editHint = sec(
-    "edit-keys",
-    T("输入框下："),
-    K("Enter"),
-    T(" 提交；"),
-    K("Ctrl+Delete"),
-    T(" / "),
-    K("⌘+Delete"),
-    T(" 清空；点外部取消。"),
-  );
-
-  if (activeLayer === "whole_set") {
-    const secondaries: SessionGuidanceSecondary[] = [editHint];
-    const clip = lineClip(userHasManualCopiedOnce);
-    if (clip) secondaries.push(clip);
-    return {
-      primaryText:
-        wholeSetFlow === "whole_required"
-          ? "编辑「对当前选取的说明」：Enter 完成整体闸；Esc 关层。"
-          : "可继续编辑整体说明，或 Enter 关闭后改逐项。",
-      primaryUseShiny: false,
-      secondaries,
-    };
-  }
-
-  const secondaries: SessionGuidanceSecondary[] = [editHint];
+  const secondaries: SessionGuidanceSecondary[] = [];
   const clip = lineClip(userHasManualCopiedOnce);
   if (clip) secondaries.push(clip);
+
+  if (activeLayer === "whole_set") {
+    return {
+      primaryText: wholeSetFlow === "whole_required" ? "整段说明" : "整段",
+      primaryUseShiny: false,
+      secondaries,
+    };
+  }
+
   return {
-    primaryText: "编辑「修改说明」：Enter 提交；Esc 关层。",
+    primaryText: "逐项说明",
     primaryUseShiny: false,
     secondaries,
   };
