@@ -3,8 +3,12 @@ import { NS } from "../../shared/dom/constants";
 
 let bootPromise: Promise<void> | null = null;
 
+/** 只清掉右下角浮动主面板；沙箱/教程里 `layout: "sandbox"` 的预览面板带 `${NS}-chat--sandbox`，必须保留，否则与扩展启动互相踩。 */
 function removeOrphanFloatingPanels(): void {
-  document.querySelectorAll(`.${NS}-root.${NS}-chat`).forEach((el) => el.remove());
+  document.querySelectorAll(`.${NS}-root.${NS}-chat`).forEach((el) => {
+    if (el.classList.contains(`${NS}-chat--sandbox`)) return;
+    el.remove();
+  });
 }
 
 export async function ensureSelectorApp(): Promise<void> {

@@ -16,6 +16,11 @@
   min-width: 0;
 }
 
+/* 文档流中的 EditorPanel（editor.css 内 .ai-editor-chat--sandbox）；.selector-embedded-editor-host 供选取逻辑识别 */
+.sandbox-editor-panel-host {
+  max-width: 100%;
+}
+
 .sandbox-page-lead {
   margin: 0 0 22px;
   font-size: 0.9375rem;

@@ -1,4 +1,5 @@
 import type { ElementId } from "../../entities/element-selection";
+import { createEditorPanelShellElement } from "../../entities/editor-chrome";
 import { NS } from "../dom/constants";
 
 export interface PanelTag {
@@ -33,43 +34,13 @@ export class EditorPanel {
   private copyTimer: number | null = null;
 
   constructor(private readonly callbacks: EditorPanelCallbacks, options?: EditorPanelOptions) {
-    this.root = document.createElement("div");
-    this.root.className = `${NS}-root ${NS}-chat`;
-    if (options?.layout === "sandbox") {
-      this.root.classList.add(`${NS}-chat--sandbox`);
-    }
-    this.root.innerHTML = `
-      <div class="${NS}-drag-handle">
-        <span class="${NS}-drag-title">
-          <span class="${NS}-status-dot"></span>
-          <span class="${NS}-status-label">Selecting</span>
-        </span>
-        <div class="${NS}-panel-actions">
-          <button class="${NS}-panel-btn" data-action="minimize" title="Minimize">${ICON_MINIMIZE}</button>
-          <button class="${NS}-panel-btn" data-action="close" title="Close">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              <line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-      <div class="${NS}-panel-body">
-        <div class="${NS}-chat-tags ${NS}-hidden"></div>
-        <div class="${NS}-shortcuts">
-          <span><kbd>Click</kbd> Select</span>
-          <span><kbd>Shift</kbd> Multi</span>
-          <span><kbd>Arrows</kbd> Navigate</span>
-          <span><kbd>Space</kbd> Pause</span>
-          <span><kbd>Cmd/Ctrl C</kbd> Copy</span>
-          <span><kbd>Cmd/Ctrl Z</kbd> Undo</span>
-          <span><kbd>Esc</kbd> Clear</span>
-        </div>
-        <button class="${NS}-copy-btn" disabled>Copy Prompt</button>
-      </div>
-    `;
+    this.root = createEditorPanelShellElement({
+      layout: options?.layout ?? "floating",
+      mode: "interactive",
+    });
     (options?.mount ?? document.body).appendChild(this.root);
 
+    this.copyButton.disabled = false;
     this.copyButton.onclick = () => this.callbacks.onCopy();
     this.root.querySelector<HTMLButtonElement>('[data-action="minimize"]')!.onclick = () => this.toggleMinimize();
     this.root.querySelector<HTMLButtonElement>('[data-action="close"]')!.onclick = () => this.callbacks.onClose();

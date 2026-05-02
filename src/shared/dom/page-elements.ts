@@ -1,12 +1,20 @@
 import type { ElementId } from "../../entities/element-selection";
 import { truncate, type PromptElementContext } from "../../entities/prompt-composition";
-import { AI_ID, NS } from "./constants";
+import { AI_ID, EMBEDDED_EDITOR_HOST_CLASS, NS } from "./constants";
 import { getReactDebug } from "./react-debug";
 
 let generatedIdCounter = 0;
 
+/** 在任意 `.${NS}-root` 子树内（浮动主面板、批注按钮等） */
 export function isEditorElement(el: EventTarget | null): boolean {
   return el instanceof Element && !!el.closest(`.${NS}-root`);
+}
+
+/** 浮动/内嵌扩展 UI：含 `.${NS}-root` 与内嵌主面板宿主（宿主上可能没有 ai-editor-root 祖先） */
+export function isExtensionUiSurface(el: EventTarget | null): boolean {
+  if (!(el instanceof Element)) return false;
+  if (el.closest(`.${NS}-root`)) return true;
+  return Boolean(el.closest(`.${EMBEDDED_EDITOR_HOST_CLASS}`));
 }
 
 export function assignElementIds(root: Element): void {
@@ -15,7 +23,7 @@ export function assignElementIds(root: Element): void {
 
   while ((node = walker.nextNode())) {
     if (!(node instanceof Element)) continue;
-    if (isEditorElement(node)) continue;
+    if (isExtensionUiSurface(node)) continue;
     if (!node.hasAttribute(AI_ID)) node.setAttribute(AI_ID, createElementId());
   }
 }
@@ -83,7 +91,7 @@ export function resolveTarget(el: EventTarget | null): Element | null {
 
 export function meaningfulElements(): Element[] {
   return Array.from(document.querySelectorAll(`[${AI_ID}]`)).filter(
-    (el) => !isEditorElement(el) && isVisible(el) && isMeaningful(el),
+    (el) => !isExtensionUiSurface(el) && isVisible(el) && isMeaningful(el),
   );
 }
 

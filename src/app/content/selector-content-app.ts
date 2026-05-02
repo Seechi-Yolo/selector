@@ -12,12 +12,13 @@ import {
   elementId,
   elementLabel,
   isEditorElement,
+  isExtensionUiSurface,
   isMeaningful,
   isVisible,
   meaningfulElements,
   resolveTarget,
 } from "../../shared/dom/page-elements";
-import { injectEditorStyle, removeEditorStyle } from "../../shared/styles/inject-editor-style";
+import { EditorChromeTheme } from "../../entities/editor-chrome";
 import { AnnotationPopover, EditorPanel, SelectionOverlays } from "../../shared/ui";
 
 interface ListenerRecord {
@@ -53,7 +54,7 @@ export class SelectorContentApp {
     if (this.started) return;
     this.started = true;
 
-    injectEditorStyle();
+    EditorChromeTheme.inject();
     assignElementIds(document.body);
     this.overlays.createHoverBox();
     this.panel = new EditorPanel({
@@ -114,7 +115,7 @@ export class SelectorContentApp {
     this.onboarding = null;
     this.panel?.destroy();
     this.panel = null;
-    removeEditorStyle();
+    EditorChromeTheme.remove();
     delete window.__selectorApp;
   }
 
@@ -165,7 +166,7 @@ export class SelectorContentApp {
   }
 
   private handleMouseDown(event: MouseEvent): void {
-    if (isEditorElement(event.target)) return;
+    if (isExtensionUiSurface(event.target)) return;
     if (this.panel?.isMinimized || this.paused) return;
     if (event.button !== 0) return;
     if (event.shiftKey) event.preventDefault();
@@ -203,7 +204,7 @@ export class SelectorContentApp {
   }
 
   private handleClick(event: MouseEvent): void {
-    if (isEditorElement(event.target)) return;
+    if (isExtensionUiSurface(event.target)) return;
     if (this.panel?.isMinimized || this.paused) return;
     if (this.wasJustDragging) return;
 
@@ -225,7 +226,7 @@ export class SelectorContentApp {
 
   private handleKeyDown(event: KeyboardEvent): void {
     if (
-      isEditorElement(event.target) &&
+      isExtensionUiSurface(event.target) &&
       event.target instanceof HTMLElement &&
       ["INPUT", "TEXTAREA"].includes(event.target.tagName)
     ) {

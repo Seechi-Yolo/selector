@@ -1,11 +1,19 @@
 import shellCss from "../_shell/extension-page-shell.css?raw";
 import sandboxPageCss from "./sandbox-page.css?raw";
 import { installSelectorExtensionPageActionListener } from "../../shared/extension/install-selector-extension-page-action-listener";
+import {
+  createEditorPanelShellElement,
+  EditorChromeTheme,
+  paintShellSampleTags,
+} from "../../entities/editor-chrome";
+import { EMBEDDED_EDITOR_HOST_CLASS } from "../../shared/dom/constants";
 
 function injectStyles(): void {
-  const el = document.createElement("style");
-  el.textContent = `${shellCss}\n${sandboxPageCss}`;
-  document.head.appendChild(el);
+  const base = document.createElement("style");
+  base.textContent = `${shellCss}\n${sandboxPageCss}`;
+  document.head.appendChild(base);
+  /** 与可会话主面板共用 `EditorChromeTheme`（`assets/editor.css`） */
+  EditorChromeTheme.inject();
 }
 
 interface SandboxSectionConfig {
@@ -62,6 +70,7 @@ function main(): void {
   railInner.appendChild(railTitle);
 
   const navItems: readonly { href: string; label: string }[] = [
+    { href: "#sample-editor-panel", label: "主面板" },
     { href: "#sample-text", label: "文案与标题" },
     { href: "#sample-cards", label: "卡片与布局" },
     { href: "#sample-lists", label: "列表与链接" },
@@ -90,6 +99,24 @@ function main(): void {
   lead.textContent =
     "以下为不同样式的页面片段。请使用与在普通网页中相同的方式：点击扩展图标或快捷键打开 Selector，在右下角使用主面板，对本页元素进行选取、批注与复制。";
   flow.appendChild(lead);
+
+  const secEditorPanel = createSandboxSection({ id: "sample-editor-panel", title: "主面板" });
+  const panelIntro = document.createElement("p");
+  panelIntro.className = "sandbox-prose sandbox-prose-muted";
+  panelIntro.style.marginBottom = "14px";
+  panelIntro.textContent =
+    "以下为「主面板外观」领域：仅注入 EditorChromeTheme（assets/editor.css）与静态壳 DOM，无 EditorPanel 选取/复制等逻辑。工具栏打开 Selector 后挂载的是另一对象（可交互 EditorPanel），二者样式同源、职责分离。";
+  const panelMount = document.createElement("div");
+  panelMount.className = `sandbox-editor-panel-host ${EMBEDDED_EDITOR_HOST_CLASS}`;
+  secEditorPanel.body.append(panelIntro, panelMount);
+
+  const shellRoot = createEditorPanelShellElement({ layout: "sandbox", mode: "shell" });
+  panelMount.appendChild(shellRoot);
+  paintShellSampleTags(shellRoot, [
+    { label: "示例条目 A", hasAnnotation: false },
+    { label: "示例条目 B", hasAnnotation: true },
+  ]);
+  flow.appendChild(secEditorPanel.root);
 
   const secText = createSandboxSection({ id: "sample-text", title: "文案与标题" });
   secText.body.innerHTML = `
