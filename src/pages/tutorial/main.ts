@@ -71,21 +71,6 @@ function main(): void {
   const shell = document.createElement("div");
   shell.className = "tutorial-shell";
 
-  const hero = document.createElement("header");
-  hero.className = "tutorial-hero";
-  hero.innerHTML = `
-    <h1>使用教程</h1>
-    <p>说明常用能力与快捷键。若要试用主面板、选取高亮与批注，请打开顶栏的<strong>「沙箱」</strong>。</p>
-    <p class="tutorial-hero-quick">
-      <a href="#open">启动扩展</a>
-      <span aria-hidden="true"> · </span>
-      <a href="#select">单击选取</a>
-      <span aria-hidden="true"> · </span>
-      <a href="#copy">复制提示词</a>
-    </p>
-  `;
-  shell.appendChild(hero);
-
   const grid = document.createElement("div");
   grid.className = "tutorial-docs-grid";
 

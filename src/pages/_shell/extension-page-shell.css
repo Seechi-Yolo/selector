@@ -88,94 +88,6 @@ body {
   padding: 28px 20px 0;
 }
 
-/* --- Hero（大标题 + 标签行） --- */
-.tutorial-hero {
-  margin-bottom: 32px;
-  padding: 28px 28px 26px;
-  border-radius: var(--va-radius-lg);
-  border: 1px solid var(--va-border);
-  background: linear-gradient(145deg, rgba(20, 20, 20, 0.96) 0%, rgba(16, 16, 16, 0.88) 45%, rgba(10, 12, 14, 0.92) 100%);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.45) inset,
-    0 24px 64px rgba(0, 0, 0, 0.55),
-    0 0 80px var(--va-glow);
-}
-
-.tutorial-hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 14px;
-  font-family: var(--va-font-display);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--va-steel);
-}
-
-.tutorial-hero-eyebrow::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--va-signal);
-  box-shadow: 0 0 10px var(--va-signal);
-}
-
-.tutorial-hero h1 {
-  margin: 0 0 14px;
-  font-family: var(--va-font-display);
-  font-size: clamp(1.75rem, 4vw, 2.75rem);
-  font-weight: 600;
-  line-height: 1.08;
-  letter-spacing: -0.045em;
-  color: var(--va-snow);
-  background: linear-gradient(105deg, #ffffff 0%, var(--va-snow) 38%, var(--va-mint) 120%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.tutorial-hero p {
-  margin: 0;
-  max-width: 52rem;
-  font-size: 0.9375rem;
-  line-height: 1.65;
-  color: var(--va-parchment);
-}
-
-.tutorial-hero strong {
-  color: var(--va-mint);
-  font-weight: 600;
-}
-
-.tutorial-hero-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.tutorial-hero-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: var(--va-steel);
-  border: 1px solid rgba(61, 58, 57, 0.85);
-  background: rgba(5, 5, 7, 0.55);
-}
-
-.tutorial-hero-pill--accent {
-  color: var(--va-mint);
-  border-color: rgba(0, 217, 146, 0.35);
-  background: rgba(0, 217, 146, 0.08);
-}
-
 /* --- 双栏：侧轨目录 + 正文 --- */
 .tutorial-docs-grid {
   display: grid;
@@ -383,24 +295,6 @@ body {
   font-size: 0.75rem;
   line-height: 1.45;
   color: var(--va-steel);
-}
-
-.tutorial-hero-quick {
-  margin: 14px 0 0;
-  font-size: 0.875rem;
-  color: var(--va-parchment);
-}
-
-.tutorial-hero-quick a {
-  color: var(--va-mint);
-  font-weight: 600;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(0, 217, 146, 0.35);
-}
-
-.tutorial-hero-quick a:hover {
-  color: var(--va-snow);
-  border-bottom-color: var(--va-mint);
 }
 
 .tutorial-section code {
