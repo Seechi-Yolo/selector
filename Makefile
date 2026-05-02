@@ -39,6 +39,14 @@ reset: ## Clean local dependencies and install again
 	npm install
 
 dev: ## Watch-build the extension during local development
+	@printf "\nStarting extension watch build...\n\n"
+	@printf "After the first build finishes:\n"
+	@printf "1. Open Chrome and go to: chrome://extensions\n"
+	@printf "2. Enable Developer mode in the top-right corner\n"
+	@printf "3. Click Load unpacked\n"
+	@printf "4. Select this project directory's dist/ folder\n"
+	@printf "5. Open a target page, then click the Selector extension action or press Alt+Shift+S\n"
+	@printf "6. After code changes rebuild, click Reload on the Selector extension card\n\n"
 	npx vite build --watch
 
 build: ## Build the side-loadable MV3 extension into dist/
@@ -70,11 +78,13 @@ release-check: clean install build smoke arch-check privacy-check version ## Run
 
 reload-info: ## Print Chrome side-load reload steps
 	@printf "Chrome side-load flow:\n"
-	@printf "1. Run: make build\n"
-	@printf "2. Open: chrome://extensions\n"
-	@printf "3. Enable Developer mode\n"
-	@printf "4. Load unpacked: dist/\n"
-	@printf "5. After changes, click Reload on the Selector extension card\n"
+	@printf "1. Run: make build or make dev\n"
+	@printf "2. Open Chrome and go to: chrome://extensions\n"
+	@printf "3. Enable Developer mode in the top-right corner\n"
+	@printf "4. Click Load unpacked\n"
+	@printf "5. Select this project directory's dist/ folder\n"
+	@printf "6. Open a target page, then click the Selector extension action or press Alt+Shift+S\n"
+	@printf "7. After code changes rebuild, click Reload on the Selector extension card\n"
 
 inspect: ## Print MV3 debugging entry points
 	@printf "MV3 debugging entry points:\n"
