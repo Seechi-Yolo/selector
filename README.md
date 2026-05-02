@@ -30,7 +30,7 @@ Open any web page and click the **Selector** extension action. You can also use 
 | **⌘/Ctrl + C** | Copy the composed **复制提示词** to the clipboard (same text as auto-sync) |
 | **⌘/Ctrl + Z** | Undo the last selection / annotation change |
 | **Space** | Pause / resume picking |
-| **Esc** | Close instruction first when open; otherwise clear selection (see PRD D-11 in-repo) |
+| **Esc** | Close instruction first when open; otherwise clear selection（见 `docs/product-requirements-documentation/selection-session-interaction-and-state.md` **I-11**） |
 
 The composed **复制提示词** includes page path, element metadata (tag, selector, text, React component info where available), optional **对当前选取的说明**, and per-element **修改说明** where present. Changes debounce-auto-copy to the clipboard when there is writable content.
 

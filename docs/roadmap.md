@@ -70,4 +70,4 @@
 
 ## 文档同步
 
-实现发生变更时，须同步更新本文件（里程碑表与上文交付/验收）、[product-requirements-documentation/product-goal.md](./product-requirements-documentation/product-goal.md)、[product-requirements-documentation/tutorial-and-sandbox.md](./product-requirements-documentation/tutorial-and-sandbox.md)（与扩展内教程、沙箱、首次引导相关时）。工程细节以仓库根目录 `README.md` 与 `src/` 为准。里程碑收口时须更新 [README.md](./README.md)（本 `docs/` 目录索引）。
+实现发生变更时，须同步更新本文件（里程碑表与上文交付/验收）、[product-requirements-documentation/product-goal.md](./product-requirements-documentation/product-goal.md)、选取会话相关 PRD（[`user-stories-single-multi-and-layout-move.md`](./product-requirements-documentation/user-stories-single-multi-and-layout-move.md) 索引下的壳体/交互/Slash 文档）、[product-requirements-documentation/tutorial-and-sandbox.md](./product-requirements-documentation/tutorial-and-sandbox.md)（与扩展内教程、沙箱、首次引导相关时）。工程细节以仓库根目录 `README.md` 与 `src/` 为准。里程碑收口时须更新 [README.md](./README.md)（本 `docs/` 目录索引）。
