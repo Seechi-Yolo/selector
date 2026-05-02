@@ -2,17 +2,20 @@
 
 Point at any element. Tell your AI what to change.
 
-A bookmarklet that lets you visually select elements on any web page, add instructions, and copy a structured prompt — paste it into Claude Code, Codex, Cursor, or any AI coding assistant.
+Selector is a local-first Chrome MV3 extension that lets you visually select elements on any web page, add instructions, and copy a structured prompt for Claude Code, Codex, Cursor, or any AI coding assistant.
 
-## Install
+## Install for development
 
-1. Visit the **[install page](https://oil-oil.github.io/selector/)**
-2. Drag the **Selector** button to your bookmarks bar (one-time)
-3. Done
+```bash
+npm install
+npm run build
+```
+
+Then open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select `dist/`.
 
 ## Usage
 
-Open any web page, click the **Selector** bookmark.
+Open any web page and click the **Selector** extension action. You can also use `Alt+Shift+S`.
 
 | Action | What it does |
 |---|---|
@@ -22,8 +25,8 @@ Open any web page, click the **Selector** bookmark.
 | **↑ / ↓** | Navigate to parent / child element |
 | **← / →** | Navigate to previous / next sibling |
 | **✎ button** | Add per-element instruction |
-| **⌘C** | Copy prompt to clipboard |
-| **⌘Z** | Undo last selection change |
+| **⌘/Ctrl + C** | Copy prompt to clipboard |
+| **⌘/Ctrl + Z** | Undo last selection change |
 | **Space** | Pause / resume selecting |
 | **Esc** | Clear selection |
 
@@ -51,15 +54,15 @@ Page: /dashboard
 
 ## How it works
 
-The bookmarklet injects `editor.css` + `editor.js` into the current page. Everything runs client-side — no data is sent anywhere. The code is bundled into the bookmark at install time, so it works offline after that.
+The extension injects a content script into the active tab after a user action. Everything runs client-side in the browser. No selected content, annotations, prompts, or page metadata are uploaded.
 
 ## Development
 
 ```bash
 git clone https://github.com/oil-oil/selector.git
 cd selector
-# Edit assets/editor.js and assets/editor.css
-# Push to main — GitHub Pages auto-deploys
+npm install
+npm run build
 ```
 
 ## License
