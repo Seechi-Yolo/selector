@@ -17,6 +17,8 @@ export class BrowserClipboard implements ClipboardPort {
 }
 
 function fallbackCopy(text: string): void {
+  const previous = document.activeElement;
+
   const textarea = document.createElement("textarea");
   textarea.value = text;
   textarea.style.cssText = "position:fixed;opacity:0;top:0;left:0";
@@ -31,4 +33,8 @@ function fallbackCopy(text: string): void {
   }
 
   textarea.remove();
+
+  if (previous instanceof HTMLElement && previous.isConnected) {
+    previous.focus({ preventScroll: true });
+  }
 }
