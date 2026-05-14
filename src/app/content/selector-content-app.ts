@@ -570,6 +570,12 @@ export class SelectorContentApp {
 
   private handleKeyDown(event: KeyboardEvent): void {
     if (event.key === "Escape") {
+      if (!this.session.instructionOpen && !this.hasSelections()) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.destroy();
+        return;
+      }
       const out = reduceSelectionSession(this.session, this.clipboardIntent, { type: "esc", atMs: Date.now() });
       this.session = out.state;
       this.clipboardIntent = out.clipboard;
